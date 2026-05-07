@@ -7,6 +7,22 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.3] - 2026-05-07
+
+### Added
+- New `@mozilla/firefox-devtools-mcp-moz` npm package with privileged context support enabled by default
+- `--profile-path` now uses a dedicated subfolder to avoid corrupting existing profiles, and warns when reusing a profile that already exists
+
+### Fixed
+- Profile reuse warnings are now surfaced as MCP errors so AI assistants can see them
+- Network debug command now uses `statusMin=400` instead of `status="failed"` to correctly match 4xx/5xx responses
+- Docker image now creates the user home directory
+
+### Changed
+- Package renamed from `firefox-devtools-mcp` to `@mozilla/firefox-devtools-mcp`
+- License changed to dual MIT OR Apache-2.0
+- Reduced emoji usage in MCP log messages
+
 ## [0.9.2] - 2026-04-16
 
 ### Added
@@ -245,6 +261,7 @@ Released on npm, see GitHub releases for details.
 - UID-based element referencing system
 - Headless mode support
 
+[0.9.3]: https://github.com/mozilla/firefox-devtools-mcp/compare/0.9.2...0.9.3
 [0.9.2]: https://github.com/mozilla/firefox-devtools-mcp/compare/0.9.1...0.9.2
 [0.9.1]: https://github.com/mozilla/firefox-devtools-mcp/compare/0.9.0...0.9.1
 [0.9.0]: https://github.com/mozilla/firefox-devtools-mcp/compare/0.8.1...0.9.0
