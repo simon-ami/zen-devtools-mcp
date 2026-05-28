@@ -119,9 +119,10 @@ describe('FirefoxCore connect() profile handling', () => {
       Browser: { FIREFOX: 'firefox' },
     }));
 
-    // Mock node:fs so profile.ts doesn't touch the real filesystem
+    // Mock node:fs so profile.ts doesn't touch the real filesystem.
+    // existsSync returns true for geckodriver paths so findGeckodriver() succeeds.
     vi.doMock('node:fs', () => ({
-      existsSync: vi.fn().mockReturnValue(false),
+      existsSync: vi.fn((p: unknown) => String(p).includes('geckodriver')),
       mkdirSync: vi.fn(),
       copyFileSync: vi.fn(),
       openSync: vi.fn().mockReturnValue(3),
