@@ -65,7 +65,7 @@ Add to your Claude Code config file:
       "command": "npx",
       "args": ["-y", "@mozilla/firefox-devtools-mcp@latest", "--headless", "--viewport", "1280x720"],
       "env": {
-        "START_URL": "about:home"
+        "START_URL": "about:blank"
       }
     }
   }

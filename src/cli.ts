@@ -96,8 +96,8 @@ export const cliOptions = {
   },
   startUrl: {
     type: 'string',
-    description: 'URL to open when Firefox starts (default: about:home)',
-    default: process.env.START_URL ?? 'about:home',
+    description: 'URL to open when Firefox starts (default: about:blank)',
+    default: process.env.START_URL ?? 'about:blank',
   },
   connectExisting: {
     type: 'boolean',
