@@ -14,7 +14,7 @@ import {
 
 import { SERVER_NAME, SERVER_VERSION } from './config/constants.js';
 import { log, logError, logDebug, setupLogFile, flushLogs } from './utils/logger.js';
-import { parsePrefs } from './cli.js';
+import { parsePrefs, defaultProfileDir } from './cli.js';
 import type { parseArguments } from './cli.js';
 import { FirefoxDevTools } from './firefox/index.js';
 import type { FirefoxLaunchOptions } from './firefox/types.js';
@@ -119,7 +119,8 @@ export async function getFirefox(): Promise<FirefoxDevTools> {
     options = {
       firefoxPath: args.firefoxPath ?? undefined,
       headless: args.headless,
-      profilePath: args.profilePath ?? undefined,
+      profilePath:
+        args.profilePath ?? (args.autoProfile ? defaultProfileDir(args.firefoxPath) : undefined),
       viewport: args.viewport ?? undefined,
       args: (args.firefoxArg as string[] | undefined) ?? undefined,
       startUrl: args.startUrl ?? undefined,
