@@ -1,10 +1,10 @@
 import { defineConfig } from 'tsup';
 
 export default defineConfig([
-  // Moz build (includes --enable-privileged-context)
+  // Privileged local build (includes --enable-privileged-context)
   {
     entry: { index: 'src/index.moz.ts' },
-    outDir: 'dist.moz',
+    outDir: 'dist.privileged',
     format: ['esm'],
     target: 'node20',
     bundle: true,
@@ -22,7 +22,7 @@ export default defineConfig([
     entry: {
       'snapshot.injected': 'src/firefox/snapshot/injected/snapshot.injected.ts',
     },
-    outDir: 'dist.moz',
+    outDir: 'dist.privileged',
     format: ['iife'],
     target: 'es2020',
     bundle: true,
@@ -32,6 +32,6 @@ export default defineConfig([
     dts: false,
     platform: 'browser',
     globalName: '__SnapshotInjected',
-    onSuccess: 'echo "Moz build completed successfully!"',
+    onSuccess: 'echo "Privileged build completed successfully!"',
   },
 ]);

@@ -32,6 +32,6 @@ export default defineConfig([
     dts: false,
     platform: 'browser',
     globalName: '__SnapshotInjected',
-    onSuccess: 'echo "✅ Build completed successfully!"',
+    onSuccess: 'echo "Build completed successfully!"',
   },
 ]);
