@@ -16,11 +16,12 @@ import { SERVER_NAME, SERVER_VERSION } from './config/constants.js';
 import { log, logError, logDebug, setupLogFile, flushLogs } from './utils/logger.js';
 import { parsePrefs, defaultProfileDir } from './cli.js';
 import type { parseArguments } from './cli.js';
-import { FirefoxDevTools } from './firefox/index.js';
+import { ZenDevTools } from './firefox/index.js';
 import type { FirefoxLaunchOptions } from './firefox/types.js';
 import * as tools from './tools/index.js';
 import type { McpToolResponse } from './types/common.js';
 import { errorResponse } from './utils/response-helpers.js';
+import { defaultZenPath } from './config/browser.js';
 
 type Args = ReturnType<typeof parseArguments>;
 
@@ -35,13 +36,13 @@ if (!major || major < 20) {
 export let args = {} as Args;
 
 // Global context (lazy initialized on first tool call)
-let firefox: FirefoxDevTools | null = null;
+let firefox: ZenDevTools | null = null;
 let nextLaunchOptions: FirefoxLaunchOptions | null = null;
-// Warning generated during Firefox startup, surfaced in the first tool response.
+// Warning generated during Zen startup, surfaced in the first tool response.
 let pendingWarning: string | null = null;
 
 /**
- * Reset Firefox instance (used when disconnection is detected).
+ * Reset Zen instance (used when disconnection is detected).
  * Tries graceful close with a timeout; if it hangs (zombie geckodriver),
  * force-kills the process tree.
  */
@@ -51,12 +52,11 @@ export async function resetFirefox(): Promise<void> {
     firefox = null;
   }
   pendingWarning = null;
-  log('Firefox instance reset - will reconnect on next tool call');
+  log('Zen instance reset - will reconnect on next tool call');
 }
 
 /**
- * Set options for the next Firefox launch
- * Used by restart_firefox tool to change configuration
+ * Set options for the next Zen launch.
  */
 export function setNextLaunchOptions(options: FirefoxLaunchOptions): void {
   nextLaunchOptions = options;
@@ -64,25 +64,25 @@ export function setNextLaunchOptions(options: FirefoxLaunchOptions): void {
 }
 
 /**
- * Check if Firefox is currently running (without auto-starting)
+ * Check if Zen is currently running (without auto-starting)
  */
 export function isFirefoxRunning(): boolean {
   return firefox !== null;
 }
 
 /**
- * Get Firefox instance if running, null otherwise (no auto-start)
+ * Get Zen instance if running, null otherwise (no auto-start)
  */
-export function getFirefoxIfRunning(): FirefoxDevTools | null {
+export function getFirefoxIfRunning(): ZenDevTools | null {
   return firefox;
 }
 
-export async function getFirefox(): Promise<FirefoxDevTools> {
+export async function getFirefox(): Promise<ZenDevTools> {
   // If we have an existing instance, verify it's still connected
   if (firefox) {
     const isConnected = await firefox.isConnected();
     if (!isConnected) {
-      log('Firefox connection lost, reconnecting...');
+      log('Zen connection lost, reconnecting...');
       await resetFirefox();
     } else {
       return firefox;
@@ -90,15 +90,15 @@ export async function getFirefox(): Promise<FirefoxDevTools> {
   }
 
   // No existing instance - create new connection
-  log('Initializing Firefox DevTools connection...');
+  log('Initializing Zen DevTools connection...');
 
   let options: FirefoxLaunchOptions;
 
-  // Use nextLaunchOptions if set (from restart_firefox tool)
+  // Use nextLaunchOptions if set by restart_zen.
   if (nextLaunchOptions) {
     options = nextLaunchOptions;
     nextLaunchOptions = null; // Clear after use
-    log('Using custom launch options from restart_firefox');
+    log('Using custom launch options from restart_zen');
   } else {
     // Parse environment variables from CLI args (format: KEY=VALUE)
     let envVars: Record<string, string> | undefined;
@@ -116,13 +116,15 @@ export async function getFirefox(): Promise<FirefoxDevTools> {
     const prefValues = parsePrefs(args.pref);
     const prefs = Object.keys(prefValues).length > 0 ? prefValues : undefined;
 
+    const resolvedZenPath = args.zenPath ?? defaultZenPath();
+
     options = {
-      firefoxPath: args.firefoxPath ?? undefined,
+      zenPath: resolvedZenPath,
       headless: args.headless,
       profilePath:
-        args.profilePath ?? (args.autoProfile ? defaultProfileDir(args.firefoxPath) : undefined),
+        args.profilePath ?? (args.autoProfile ? defaultProfileDir(resolvedZenPath) : undefined),
       viewport: args.viewport ?? undefined,
-      args: (args.firefoxArg as string[] | undefined) ?? undefined,
+      args: (args.zenArg as string[] | undefined) ?? undefined,
       startUrl: args.startUrl ?? undefined,
       acceptInsecureCerts: args.acceptInsecureCerts,
       connectExisting: args.connectExisting,
@@ -130,19 +132,17 @@ export async function getFirefox(): Promise<FirefoxDevTools> {
       env: envVars,
       logFile: args.outputFile ?? undefined,
       prefs,
-      androidDevice: args.androidDevice ?? undefined,
-      androidPackage: args.androidPackage ?? undefined,
     };
   }
 
-  firefox = new FirefoxDevTools(options);
+  firefox = new ZenDevTools(options);
   try {
     await firefox.connect();
-    log('Firefox DevTools connection established');
+    log('Zen DevTools connection established');
     pendingWarning = firefox.getAndClearProfileWarning();
     return firefox;
   } catch (error) {
-    // Clean up before discarding — ensures the geckodriver process is killed
+    // Clean up before discarding so the geckodriver process is killed
     // and the Marionette session is released. Without this, a failure during
     // BiDi setup (after the WebDriver session is already established) would
     // leave geckodriver running with an active Marionette session, causing
@@ -220,10 +220,10 @@ export async function run(
     ['navigate_history', tools.handleNavigateHistory],
     ['set_viewport_size', tools.handleSetViewportSize],
 
-    // Firefox Management
-    ['get_firefox_output', tools.handleGetFirefoxLogs],
-    ['get_firefox_info', tools.handleGetFirefoxInfo],
-    ['restart_firefox', tools.handleRestartFirefox],
+    // Zen management
+    ['get_zen_output', tools.handleGetZenLogs],
+    ['get_zen_info', tools.handleGetZenInfo],
+    ['restart_zen', tools.handleRestartZen],
 
     // WebExtensions (install/uninstall use standard BiDi, no privileged context required)
     ['install_extension', tools.handleInstallExtension],
@@ -255,8 +255,8 @@ export async function run(
           ['list_privileged_contexts', tools.handleListPrivilegedContexts],
           ['select_privileged_context', tools.handleSelectPrivilegedContext],
           ['evaluate_privileged_script', tools.handleEvaluatePrivilegedScript],
-          ['set_firefox_prefs', tools.handleSetFirefoxPrefs],
-          ['get_firefox_prefs', tools.handleGetFirefoxPrefs],
+          ['set_zen_prefs', tools.handleSetZenPrefs],
+          ['get_zen_prefs', tools.handleGetZenPrefs],
           ['list_extensions', tools.handleListExtensions],
         ] as const)
       : []),
@@ -302,10 +302,10 @@ export async function run(
     tools.navigateHistoryTool,
     tools.setViewportSizeTool,
 
-    // Firefox Management
-    tools.getFirefoxLogsTool,
-    tools.getFirefoxInfoTool,
-    tools.restartFirefoxTool,
+    // Zen management
+    tools.getZenLogsTool,
+    tools.getZenInfoTool,
+    tools.restartZenTool,
 
     // WebExtensions (install/uninstall use standard BiDi, no privileged context required)
     tools.installExtensionTool,
@@ -337,8 +337,8 @@ export async function run(
           tools.listPrivilegedContextsTool,
           tools.selectPrivilegedContextTool,
           tools.evaluatePrivilegedScriptTool,
-          tools.setFirefoxPrefsTool,
-          tools.getFirefoxPrefsTool,
+          tools.setZenPrefsTool,
+          tools.getZenPrefsTool,
           tools.listExtensionsTool,
         ]
       : []),
@@ -350,8 +350,8 @@ export async function run(
   // Log configuration
   logDebug(`Configuration:`);
   logDebug(`  Headless: ${args.headless}`);
-  if (args.firefoxPath) {
-    logDebug(`  Firefox Path: ${args.firefoxPath}`);
+  if (args.zenPath) {
+    logDebug(`  Zen Path: ${args.zenPath}`);
   }
   if (args.viewport) {
     logDebug(`  Viewport: ${args.viewport.width}x${args.viewport.height}`);
@@ -422,10 +422,10 @@ export async function run(
   const transport = new StdioServerTransport();
   await server.connect(transport);
 
-  log('Firefox DevTools MCP server running on stdio');
+  log('Zen DevTools MCP server running on stdio');
   log('Ready to accept tool requests');
 
-  // Clean up the Marionette session so Firefox accepts new connections.
+  // Clean up the Marionette session so Zen accepts new connections.
   // Without this, the session stays locked after the MCP client disconnects.
   const cleanup = async () => {
     await resetFirefox();

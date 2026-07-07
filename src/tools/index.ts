@@ -81,15 +81,15 @@ export {
   handleSetViewportSize,
 } from './utilities.js';
 
-// Firefox management tools (logs, restart, info)
+// Zen management tools (logs, restart, info)
 export {
-  getFirefoxLogsTool,
-  getFirefoxInfoTool,
-  restartFirefoxTool,
-  handleGetFirefoxLogs,
-  handleGetFirefoxInfo,
-  handleRestartFirefox,
-} from './firefox-management.js';
+  getZenLogsTool,
+  getZenInfoTool,
+  restartZenTool,
+  handleGetZenLogs,
+  handleGetZenInfo,
+  handleRestartZen,
+} from './zen-management.js';
 
 // Privileged ("chrome") context tools
 export {
@@ -101,13 +101,13 @@ export {
   handleEvaluatePrivilegedScript,
 } from './privileged-context.js';
 
-// Firefox preferences tools
+// Zen preferences tools
 export {
-  setFirefoxPrefsTool,
-  getFirefoxPrefsTool,
-  handleSetFirefoxPrefs,
-  handleGetFirefoxPrefs,
-} from './firefox-prefs.js';
+  setZenPrefsTool,
+  getZenPrefsTool,
+  handleSetZenPrefs,
+  handleGetZenPrefs,
+} from './zen-prefs.js';
 
 // WebExtension tools (install, uninstall, and list extensions)
 export {

@@ -1,6 +1,6 @@
 /**
- * Firefox Preferences Tools
- * Tools for getting and setting Firefox preferences via Services.prefs API
+ * Zen Preferences Tools
+ * Tools for getting and setting Zen preferences via Services.prefs API
  * Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1
  */
 
@@ -9,13 +9,13 @@ import { generatePrefScript } from '../firefox/pref-utils.js';
 import type { McpToolResponse } from '../types/common.js';
 
 // ============================================================================
-// Tool: set_firefox_prefs
+// Tool: set_zen_prefs
 // ============================================================================
 
-export const setFirefoxPrefsTool = {
-  name: 'set_firefox_prefs',
+export const setZenPrefsTool = {
+  name: 'set_zen_prefs',
   description:
-    'Set Firefox preferences at runtime a privileged API. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var.',
+    'Set Zen preferences at runtime via a privileged API. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -32,7 +32,7 @@ export const setFirefoxPrefsTool = {
   },
 };
 
-export async function handleSetFirefoxPrefs(args: unknown): Promise<McpToolResponse> {
+export async function handleSetZenPrefs(args: unknown): Promise<McpToolResponse> {
   try {
     const { prefs } = args as { prefs: Record<string, string | number | boolean> };
 
@@ -111,7 +111,7 @@ export async function handleSetFirefoxPrefs(args: unknown): Promise<McpToolRespo
     if (error instanceof Error && error.message.includes('UnsupportedOperationError')) {
       return errorResponse(
         new Error(
-          'Chrome context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Firefox.'
+          'Chrome context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Zen.'
         )
       );
     }
@@ -120,13 +120,13 @@ export async function handleSetFirefoxPrefs(args: unknown): Promise<McpToolRespo
 }
 
 // ============================================================================
-// Tool: get_firefox_prefs
+// Tool: get_zen_prefs
 // ============================================================================
 
-export const getFirefoxPrefsTool = {
-  name: 'get_firefox_prefs',
+export const getZenPrefsTool = {
+  name: 'get_zen_prefs',
   description:
-    'Get Firefox preference values via a privileged API. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var.',
+    'Get Zen preference values via a privileged API. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -140,7 +140,7 @@ export const getFirefoxPrefsTool = {
   },
 };
 
-export async function handleGetFirefoxPrefs(args: unknown): Promise<McpToolResponse> {
+export async function handleGetZenPrefs(args: unknown): Promise<McpToolResponse> {
   try {
     const { names } = args as { names: string[] };
 
@@ -212,7 +212,7 @@ export async function handleGetFirefoxPrefs(args: unknown): Promise<McpToolRespo
 
       const output: string[] = [];
       if (results.length > 0) {
-        output.push(`Firefox Preferences:`);
+        output.push(`Zen Preferences:`);
         output.push(...results);
       }
       if (errors.length > 0) {
@@ -236,7 +236,7 @@ export async function handleGetFirefoxPrefs(args: unknown): Promise<McpToolRespo
     if (error instanceof Error && error.message.includes('UnsupportedOperationError')) {
       return errorResponse(
         new Error(
-          'Chrome context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Firefox.'
+          'Chrome context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Zen.'
         )
       );
     }

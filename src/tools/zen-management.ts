@@ -1,6 +1,6 @@
 /**
- * Firefox Management Tools
- * Tools for managing Firefox instance, logs, and configuration
+ * Zen Management Tools
+ * Tools for managing the Zen instance, logs, and configuration
  */
 
 import { readFileSync, existsSync, statSync } from 'node:fs';
@@ -11,16 +11,17 @@ import {
   resetFirefox,
   setNextLaunchOptions,
 } from '../index.js';
+import { defaultZenPath } from '../config/browser.js';
 import { errorResponse, successResponse } from '../utils/response-helpers.js';
 
 // ============================================================================
-// Tool: get_firefox_logs
+// Tool: get_zen_output
 // ============================================================================
 
-export const getFirefoxLogsTool = {
-  name: 'get_firefox_output',
+export const getZenLogsTool = {
+  name: 'get_zen_output',
   description:
-    'Retrieve Firefox output (stdout/stderr including MOZ_LOG, warnings, crashes, stack traces). Returns recent output from the capture file. Use filters to focus on specific content.',
+    'Retrieve Zen output (stdout/stderr including MOZ_LOG, warnings, crashes, stack traces). Returns recent output from the capture file. Use filters to focus on specific content.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -40,7 +41,7 @@ export const getFirefoxLogsTool = {
   },
 };
 
-export async function handleGetFirefoxLogs(input: unknown) {
+export async function handleGetZenLogs(input: unknown) {
   try {
     const {
       lines = 100,
@@ -52,8 +53,8 @@ export async function handleGetFirefoxLogs(input: unknown) {
       since?: number;
     };
 
-    const firefox = await getFirefox();
-    const logFilePath = firefox.getLogFilePath();
+    const zen = await getFirefox();
+    const logFilePath = zen.getLogFilePath();
 
     if (!logFilePath) {
       return successResponse(
@@ -91,7 +92,7 @@ export async function handleGetFirefoxLogs(input: unknown) {
     const recentLines = allLines.slice(-maxLines);
 
     const result = [
-      `Firefox Output File: ${logFilePath}`,
+      `Zen Output File: ${logFilePath}`,
       `Total lines in file: ${allLines.length}`,
       grep ? `Lines matching "${grep}": ${allLines.length}` : '',
       `Showing last ${recentLines.length} lines:`,
@@ -109,32 +110,34 @@ export async function handleGetFirefoxLogs(input: unknown) {
 }
 
 // ============================================================================
-// Tool: get_firefox_info
+// Tool: get_zen_info
 // ============================================================================
 
-export const getFirefoxInfoTool = {
-  name: 'get_firefox_info',
+export const getZenInfoTool = {
+  name: 'get_zen_info',
   description:
-    'Get information about the current Firefox instance configuration, including binary path, environment variables, and output file location.',
+    'Get information about the current Zen instance configuration, including binary path, version, environment variables, and output file location.',
   inputSchema: {
     type: 'object',
     properties: {},
   },
 };
 
-export async function handleGetFirefoxInfo(_input: unknown) {
+export async function handleGetZenInfo(_input: unknown) {
   try {
-    const firefox = await getFirefox();
-    const options = firefox.getOptions();
-    const logFilePath = firefox.getLogFilePath();
-    const version = firefox.getFirefoxVersion();
+    const zen = await getFirefox();
+    const options = zen.getOptions();
+    const logFilePath = zen.getLogFilePath();
+    const zenVersion = zen.getZenVersion();
+    const geckoVersion = zen.getGeckoVersion();
 
     const info = [];
-    info.push('Firefox Instance Configuration');
+    info.push('Zen Instance Configuration');
     info.push('');
 
-    info.push(`Binary: ${options.firefoxPath ?? 'System Firefox (default)'}`);
-    info.push(`Firefox version: ${version ?? '(unknown)'}`);
+    info.push(`Binary: ${options.zenPath ?? 'Zen default path'}`);
+    info.push(`Zen version: ${zenVersion ?? '(unknown)'}`);
+    info.push(`Gecko version: ${geckoVersion ?? '(unknown)'}`);
     info.push(`Headless: ${options.headless ? 'Yes' : 'No'}`);
 
     if (options.viewport) {
@@ -189,23 +192,23 @@ export async function handleGetFirefoxInfo(_input: unknown) {
 }
 
 // ============================================================================
-// Tool: restart_firefox
+// Tool: restart_zen
 // ============================================================================
 
-export const restartFirefoxTool = {
-  name: 'restart_firefox',
+export const restartZenTool = {
+  name: 'restart_zen',
   description:
-    'Restart Firefox with different configuration. Allows changing binary path, environment variables, and other options. All current tabs will be closed.',
+    'Restart Zen with different configuration. Allows changing binary path, environment variables, and other options. All current tabs will be closed.',
   inputSchema: {
     type: 'object',
     properties: {
-      firefoxPath: {
+      zenPath: {
         type: 'string',
-        description: 'New Firefox binary path (optional, keeps current if not specified)',
+        description: 'New Zen binary path (optional, keeps current if not specified)',
       },
       profilePath: {
         type: 'string',
-        description: 'Firefox profile path (optional, keeps current if not specified)',
+        description: 'Zen profile parent path (optional, keeps current if not specified)',
       },
       env: {
         type: 'array',
@@ -227,7 +230,7 @@ export const restartFirefoxTool = {
       prefs: {
         type: 'object',
         description:
-          'Firefox preferences to set at startup. Values are auto-typed: true/false become booleans, integers become numbers, everything else is a string. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1.',
+          'Zen preferences to set at startup. Values are auto-typed: true/false become booleans, integers become numbers, everything else is a string. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1.',
         additionalProperties: {
           oneOf: [{ type: 'string' }, { type: 'number' }, { type: 'boolean' }],
         },
@@ -236,10 +239,10 @@ export const restartFirefoxTool = {
   },
 };
 
-export async function handleRestartFirefox(input: unknown) {
+export async function handleRestartZen(input: unknown) {
   try {
-    const { firefoxPath, profilePath, env, headless, startUrl, prefs } = input as {
-      firefoxPath?: string;
+    const { zenPath, profilePath, env, headless, startUrl, prefs } = input as {
+      zenPath?: string;
       profilePath?: string;
       env?: string[];
       headless?: boolean;
@@ -248,7 +251,7 @@ export async function handleRestartFirefox(input: unknown) {
     };
 
     // This tool is designed to be robust and never get stuck:
-    // - Handles disconnected Firefox gracefully (resets stale reference)
+    // - Handles disconnected Zen gracefully (resets stale reference)
     // - Handles close() errors (we're restarting anyway)
     // - Works both as initial start and restart
     // - Always leaves system in a clean state for next tool call
@@ -265,13 +268,11 @@ export async function handleRestartFirefox(input: unknown) {
       }
     }
 
-    // Check if Firefox is currently running and connected
-    const currentFirefox = getFirefoxIfRunning();
-    const isConnected = currentFirefox ? await currentFirefox.isConnected() : false;
+    const currentZen = getFirefoxIfRunning();
+    const isConnected = currentZen ? await currentZen.isConnected() : false;
 
-    if (currentFirefox && isConnected) {
-      // Firefox is running - restart with new config
-      const currentOptions = currentFirefox.getOptions();
+    if (currentZen && isConnected) {
+      const currentOptions = currentZen.getOptions();
 
       // Merge prefs: combine existing with new, new takes precedence
       const mergedPrefs =
@@ -280,7 +281,7 @@ export async function handleRestartFirefox(input: unknown) {
       // Merge with current options, preferring new values
       const newOptions = {
         ...currentOptions,
-        firefoxPath: firefoxPath ?? currentOptions.firefoxPath,
+        zenPath: zenPath ?? currentOptions.zenPath,
         profilePath: profilePath ?? currentOptions.profilePath,
         env: newEnv !== undefined ? newEnv : currentOptions.env,
         headless: headless !== undefined ? headless : currentOptions.headless,
@@ -296,8 +297,8 @@ export async function handleRestartFirefox(input: unknown) {
 
       // Prepare change summary
       const changes = [];
-      if (firefoxPath && firefoxPath !== currentOptions.firefoxPath) {
-        changes.push(`Binary: ${firefoxPath}`);
+      if (zenPath && zenPath !== currentOptions.zenPath) {
+        changes.push(`Binary: ${zenPath}`);
       }
       if (profilePath && profilePath !== currentOptions.profilePath) {
         changes.push(`Profile: ${profilePath}`);
@@ -317,33 +318,31 @@ export async function handleRestartFirefox(input: unknown) {
 
       if (changes.length === 0) {
         return successResponse(
-          'Firefox closed. Will restart with same configuration on next tool call.'
+          'Zen closed. Will restart with same configuration on next tool call.'
         );
       }
 
       return successResponse(
-        `Firefox closed. Will restart with new configuration on next tool call:\n${changes.join('\n')}`
+        `Zen closed. Will restart with new configuration on next tool call:\n${changes.join('\n')}`
       );
     } else {
-      // Firefox not running (or disconnected) - configure for first start
-      if (currentFirefox) {
+      if (currentZen) {
         // Had a stale disconnected reference, clean it up
         await resetFirefox();
       }
 
-      // Use provided firefoxPath, or fall back to CLI args if available
-      const resolvedFirefoxPath = firefoxPath ?? args.firefoxPath ?? undefined;
+      const resolvedZenPath = zenPath ?? args.zenPath ?? defaultZenPath();
 
-      if (!resolvedFirefoxPath) {
+      if (!resolvedZenPath) {
         return errorResponse(
           new Error(
-            'Firefox is not running and no firefoxPath provided. Please specify firefoxPath to start Firefox.'
+            'Zen is not running and no zenPath provided. Please specify zenPath or set ZEN_PATH to start Zen.'
           )
         );
       }
 
       const newOptions = {
-        firefoxPath: resolvedFirefoxPath,
+        zenPath: resolvedZenPath,
         profilePath: profilePath ?? args.profilePath ?? undefined,
         env: newEnv,
         headless: headless ?? false,
@@ -352,7 +351,7 @@ export async function handleRestartFirefox(input: unknown) {
 
       setNextLaunchOptions(newOptions);
 
-      const config = [`Binary: ${resolvedFirefoxPath}`];
+      const config = [`Binary: ${resolvedZenPath}`];
       const resolvedProfilePath = profilePath ?? args.profilePath;
       if (resolvedProfilePath) {
         config.push(`Profile: ${resolvedProfilePath}`);
@@ -370,9 +369,7 @@ export async function handleRestartFirefox(input: unknown) {
         config.push(`Start URL: ${startUrl}`);
       }
 
-      return successResponse(
-        `Firefox configured. Will start on next tool call:\n${config.join('\n')}`
-      );
+      return successResponse(`Zen configured. Will start on next tool call:\n${config.join('\n')}`);
     }
   } catch (error) {
     return errorResponse(error as Error);
