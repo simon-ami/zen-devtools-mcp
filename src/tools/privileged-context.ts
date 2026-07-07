@@ -11,7 +11,7 @@ import type { McpToolResponse } from '../types/common.js';
 export const listPrivilegedContextsTool = {
   name: 'list_privileged_contexts',
   description:
-    'List privileged (privileged) browsing contexts. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var. Use restart_firefox with env parameter to enable.',
+    'List privileged browsing contexts. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var. Use restart_zen with env parameter to enable.',
   inputSchema: {
     type: 'object',
     properties: {},
@@ -81,7 +81,7 @@ export async function handleListPrivilegedContexts(_args: unknown): Promise<McpT
     if (error instanceof Error && error.message.includes('UnsupportedOperationError')) {
       return errorResponse(
         new Error(
-          'Privileged context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Firefox.'
+          'Privileged context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Zen.'
         )
       );
     }
@@ -108,12 +108,12 @@ export async function handleSelectPrivilegedContext(args: unknown): Promise<McpT
     } catch {
       return errorResponse(
         new Error(
-          `Switched to context ${contextId} but failed to set Marionette privileged context. Your Firefox build may not support privileged context or MOZ_REMOTE_ALLOW_SYSTEM_ACCESS is not set.`
+          `Switched to context ${contextId} but failed to set Marionette privileged context. Your Zen/Gecko build may not support privileged context or MOZ_REMOTE_ALLOW_SYSTEM_ACCESS is not set.`
         )
       );
     }
 
-    // Update tracked context so helper tools (set_firefox_prefs, list_extensions)
+    // Update tracked context so helper tools (set_zen_prefs, list_extensions)
     // restore to this context instead of the old content context.
     firefox.setCurrentContextId(contextId);
 

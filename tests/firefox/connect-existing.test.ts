@@ -14,7 +14,7 @@ describe('getFirefox() reconnect behavior', () => {
     const mockClose = vi.fn();
 
     vi.doMock('@/firefox/index.js', () => ({
-      FirefoxDevTools: vi.fn(() => ({
+      ZenDevTools: vi.fn(() => ({
         isConnected: mockIsConnected,
         connect: mockConnect,
         close: mockClose,

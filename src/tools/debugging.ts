@@ -5,11 +5,11 @@ import type { McpToolResponse } from '../types/common.js';
 
 const MIN_VERSION = '153';
 
-function requireDebuggingSupport(firefox: { getFirefoxVersion(): string | null }): void {
-  const version = firefox.getFirefoxVersion();
+function requireDebuggingSupport(firefox: { getGeckoVersion(): string | null }): void {
+  const version = firefox.getGeckoVersion();
   if (version !== null && compareVersions(version, MIN_VERSION) < 0) {
     throw new Error(
-      `moz:debugging requires Firefox ${MIN_VERSION}+, current version is ${version}`
+      `moz:debugging requires Gecko ${MIN_VERSION}+, connected Gecko version is ${version}`
     );
   }
 }
@@ -28,7 +28,7 @@ function requireContext(contextId: string | null): string {
 export const enableDebuggerTool = {
   name: 'enable_debugger',
   description:
-    'Enable the JS debugger for the current page. Required before set_logpoint works. Requires Firefox 153+.',
+    'Enable the JS debugger for the current page. Required before set_logpoint works. Requires Gecko 153+.',
   inputSchema: { type: 'object', properties: {} },
 };
 

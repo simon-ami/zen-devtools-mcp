@@ -38,7 +38,7 @@ export class DebuggingEvents {
       await bidi.subscribe('moz:debugging.resumed', contextId ? [contextId] : undefined);
     } catch {
       logDebug(
-        'Debugging events subscription skipped (may not be available in this Firefox version)'
+        'Debugging events subscription skipped (may not be available in this Gecko version)'
       );
     }
 

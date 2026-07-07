@@ -1,34 +1,32 @@
 /**
- * Custom error classes for Firefox DevTools MCP
- */
-
-/**
- * Error thrown when Firefox browser is not connected or was closed
+ * Error thrown when Zen is not connected or was closed
  * The message is designed to help AI assistants understand what happened
  * and what action to take.
  */
-export class FirefoxDisconnectedError extends Error {
+export class ZenDisconnectedError extends Error {
   constructor(reason?: string) {
-    const baseMessage = 'Firefox browser is not connected';
+    const baseMessage = 'Zen browser is not connected';
     const instruction =
-      'The Firefox browser window was closed. ' +
-      'Use the restart_firefox tool with firefoxPath parameter to start a new Firefox instance. ' +
-      'Example: restart_firefox with firefoxPath="/usr/bin/firefox"';
+      'The Zen browser window was closed. ' +
+      'Use the restart_zen tool with zenPath parameter to start a new Zen instance. ' +
+      'Example: restart_zen with zenPath="/Applications/Zen.app/Contents/MacOS/zen"';
 
     const fullMessage = reason
       ? `${baseMessage}: ${reason}. ${instruction}`
       : `${baseMessage}. ${instruction}`;
 
     super(fullMessage);
-    this.name = 'FirefoxDisconnectedError';
+    this.name = 'ZenDisconnectedError';
   }
 }
 
+export { ZenDisconnectedError as FirefoxDisconnectedError };
+
 /**
- * Check if an error indicates Firefox disconnection
+ * Check if an error indicates browser disconnection
  */
 export function isDisconnectionError(error: unknown): boolean {
-  if (error instanceof FirefoxDisconnectedError) {
+  if (error instanceof ZenDisconnectedError) {
     return true;
   }
 

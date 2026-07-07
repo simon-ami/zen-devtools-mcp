@@ -1,8 +1,8 @@
 /**
  * WebExtension tools for MCP
- * Tools for installing, managing and inspecting Firefox extensions
+ * Tools for installing, managing and inspecting Zen extensions
  *
- * install/uninstall: Uses Firefox's native WebDriver BiDi webExtension module
+ * install/uninstall: Uses Gecko's native WebDriver BiDi webExtension module
  * list_extensions: Uses chrome-privileged AddonManager API as workaround for
  *                  missing webExtension.getExtensions BiDi command
  *
@@ -19,7 +19,7 @@ import type { McpToolResponse } from '../types/common.js';
 export const installExtensionTool = {
   name: 'install_extension',
   description:
-    'Install a Firefox extension using WebDriver BiDi webExtension.install command. Supports installing from archive (.xpi/.zip), base64-encoded data, or unpacked directory.',
+    'Install a Zen extension using WebDriver BiDi webExtension.install command. Supports installing from archive (.xpi/.zip), base64-encoded data, or unpacked directory.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -39,8 +39,7 @@ export const installExtensionTool = {
       },
       permanent: {
         type: 'boolean',
-        description:
-          'Firefox-specific: Install permanently (requires signed extension). Default: false (temporary install)',
+        description: 'Install permanently (requires signed extension). Default: false',
       },
     },
     required: ['type'],
@@ -106,7 +105,7 @@ export async function handleInstallExtension(args: unknown): Promise<McpToolResp
 export const uninstallExtensionTool = {
   name: 'uninstall_extension',
   description:
-    'Uninstall a Firefox extension using WebDriver BiDi webExtension.uninstall command. Requires the extension ID returned by install_extension or obtained from list_extensions.',
+    'Uninstall a Zen extension using WebDriver BiDi webExtension.uninstall command. Requires the extension ID returned by install_extension or obtained from list_extensions.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -148,7 +147,7 @@ export const listExtensionsTool = {
     // MOZ_REMOTE_ALLOW_SYSTEM_ACCESS is required because the tool relies on the
     // privileged AddonManager API as a workaround for the currently missing
     // webExtension.getExtensions WebDriver BiDi command.
-    'List installed Firefox extensions with UUIDs and background scripts. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var.',
+    'List installed Zen extensions with UUIDs and background scripts. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 env var.',
   inputSchema: {
     type: 'object',
     properties: {
@@ -335,7 +334,7 @@ export async function handleListExtensions(args: unknown): Promise<McpToolRespon
     if (error instanceof Error && error.message.includes('UnsupportedOperationError')) {
       return errorResponse(
         new Error(
-          'Chrome context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Firefox.'
+          'Chrome context access not enabled. Set MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 environment variable and restart Zen.'
         )
       );
     }

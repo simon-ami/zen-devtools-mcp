@@ -56,11 +56,8 @@ export interface LogpointResult {
   timestamp: number;
 }
 
-/**
- * Firefox launch options
- */
 export interface FirefoxLaunchOptions {
-  firefoxPath?: string | undefined;
+  zenPath?: string | undefined;
   headless: boolean;
   profilePath?: string | undefined;
   viewport?: { width: number; height: number } | undefined;
@@ -71,12 +68,8 @@ export interface FirefoxLaunchOptions {
   marionettePort?: number | undefined;
   env?: Record<string, string> | undefined;
   logFile?: string | undefined;
-  /** Firefox preferences to set at startup via moz:firefoxOptions */
+  /** Zen preferences to set at startup via moz:firefoxOptions */
   prefs?: Record<string, string | number | boolean> | undefined;
-  /** Android device serial; omit to auto-select the single connected device */
-  androidDevice?: string | undefined;
-  /** Android app package name (default: org.mozilla.firefox) */
-  androidPackage?: string | undefined;
 }
 
 /**

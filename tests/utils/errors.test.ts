@@ -1,32 +1,32 @@
 import { describe, it, expect } from 'vitest';
-import { FirefoxDisconnectedError, isDisconnectionError } from '../../src/utils/errors.js';
+import { ZenDisconnectedError, isDisconnectionError } from '../../src/utils/errors.js';
 
-describe('FirefoxDisconnectedError', () => {
+describe('ZenDisconnectedError', () => {
   it('should create error with default message', () => {
-    const error = new FirefoxDisconnectedError();
-    expect(error.name).toBe('FirefoxDisconnectedError');
-    expect(error.message).toContain('Firefox browser is not connected');
-    expect(error.message).toContain('restart_firefox tool');
-    expect(error.message).toContain('firefoxPath parameter');
+    const error = new ZenDisconnectedError();
+    expect(error.name).toBe('ZenDisconnectedError');
+    expect(error.message).toContain('Zen browser is not connected');
+    expect(error.message).toContain('restart_zen tool');
+    expect(error.message).toContain('zenPath parameter');
   });
 
   it('should create error with custom reason', () => {
-    const error = new FirefoxDisconnectedError('Browser was closed');
+    const error = new ZenDisconnectedError('Browser was closed');
     expect(error.message).toContain('Browser was closed');
-    expect(error.message).toContain('Firefox browser is not connected');
-    expect(error.message).toContain('restart_firefox tool');
+    expect(error.message).toContain('Zen browser is not connected');
+    expect(error.message).toContain('restart_zen tool');
   });
 
   it('should be instanceof Error', () => {
-    const error = new FirefoxDisconnectedError();
+    const error = new ZenDisconnectedError();
     expect(error).toBeInstanceOf(Error);
-    expect(error).toBeInstanceOf(FirefoxDisconnectedError);
+    expect(error).toBeInstanceOf(ZenDisconnectedError);
   });
 });
 
 describe('isDisconnectionError', () => {
-  it('should return true for FirefoxDisconnectedError', () => {
-    const error = new FirefoxDisconnectedError();
+  it('should return true for ZenDisconnectedError', () => {
+    const error = new ZenDisconnectedError();
     expect(isDisconnectionError(error)).toBe(true);
   });
 

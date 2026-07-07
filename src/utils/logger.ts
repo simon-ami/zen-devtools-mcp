@@ -1,4 +1,5 @@
 import fs from 'node:fs';
+import { BROWSER } from '../config/browser.js';
 
 let logStream: fs.WriteStream | null = null;
 
@@ -56,27 +57,27 @@ function write(message: string, args: unknown[], body?: string): void {
 }
 
 export function log(message: string, ...args: unknown[]): void {
-  write(`[firefox-devtools-mcp] ${message}`, args);
+  write(`[${BROWSER.packageName}] ${message}`, args);
 }
 
 export function logDebug(message: string, ...args: unknown[]): void {
-  if (process.env.DEBUG === '*' || process.env.DEBUG?.includes('firefox-devtools')) {
-    write(`[firefox-devtools-mcp] DEBUG: ${message}`, args);
+  if (process.env.DEBUG === '*' || process.env.DEBUG?.includes(BROWSER.debugNamespace)) {
+    write(`[${BROWSER.packageName}] DEBUG: ${message}`, args);
   }
 }
 
 export function logError(message: string, error?: unknown): void {
   if (error instanceof Error) {
-    write(`[firefox-devtools-mcp] ERROR: ${message}`, [error.message], error.stack);
+    write(`[${BROWSER.packageName}] ERROR: ${message}`, [error.message], error.stack);
   } else {
-    write(`[firefox-devtools-mcp] ERROR: ${message}`, [error]);
+    write(`[${BROWSER.packageName}] ERROR: ${message}`, [error]);
   }
 }
 
 export function setupLogFile(filePath: string): void {
   logStream = fs.createWriteStream(filePath, { flags: 'a' });
   logStream.on('error', (error) => {
-    console.error(`[firefox-devtools-mcp] Error writing to log file: ${error.message}`);
+    console.error(`[${BROWSER.packageName}] Error writing to log file: ${error.message}`);
     logStream = null;
   });
 }

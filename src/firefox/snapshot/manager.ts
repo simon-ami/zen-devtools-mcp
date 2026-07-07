@@ -66,7 +66,7 @@ export class SnapshotManager {
         try {
           this.injectedScript = readFileSync(path, 'utf-8');
           const sizeKB = (this.injectedScript.length / 1024).toFixed(1);
-          logDebug(`✓ Loaded snapshot bundle: ${path.split('/').pop()} (${sizeKB} KB)`);
+          logDebug(`Loaded snapshot bundle: ${path.split('/').pop()} (${sizeKB} KB)`);
           return this.injectedScript;
         } catch {
           // Try next path
@@ -106,7 +106,7 @@ export class SnapshotManager {
     if (result?.debugLog && Array.isArray(result.debugLog)) {
       logDebug(`isRelevant debug log (${result.debugLog.length} elements checked):`);
       result.debugLog.slice(0, 20).forEach((log: any) => {
-        logDebug(`  ${log.relevant ? '✓' : '✗'} ${log.el} (depth ${log.depth})`);
+        logDebug(`  ${log.relevant ? 'yes' : 'no'} ${log.el} (depth ${log.depth})`);
       });
       if (result.debugLog.length > 20) {
         logDebug(`  ... and ${result.debugLog.length - 20} more`);

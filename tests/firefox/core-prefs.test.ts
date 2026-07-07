@@ -4,7 +4,7 @@
 
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Mock the index module to prevent actual Firefox connection
+// Mock the index module to prevent actual browser connection
 const mockGetFirefox = vi.hoisted(() => vi.fn());
 
 vi.mock('../../src/index.js', () => ({
@@ -15,6 +15,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
   const mockSetPreference = vi.fn();
   const mockGetWindowHandle = vi.fn();
   const mockServiceBuilderAddArguments = vi.fn();
+  const zenPath = '/Applications/Zen.app/Contents/MacOS/zen';
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -60,7 +61,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
   it('should not call setPreference when no prefs are provided', async () => {
     mockSelenium();
     const { FirefoxCore } = await import('../../src/firefox/core.js');
-    const core = new FirefoxCore({ headless: true });
+    const core = new FirefoxCore({ headless: true, zenPath });
     await core.connect();
     expect(mockSetPreference).not.toHaveBeenCalled();
   });
@@ -70,6 +71,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
     const { FirefoxCore } = await import('../../src/firefox/core.js');
     const core = new FirefoxCore({
       headless: true,
+      zenPath,
       prefs: {
         'bool.pref': true,
         'int.pref': 42,
@@ -88,6 +90,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
     const { FirefoxCore } = await import('../../src/firefox/core.js');
     const core = new FirefoxCore({
       headless: true,
+      zenPath,
       prefs: { 'remote.log.level': 'Trace' },
     });
     await core.connect();
@@ -97,7 +100,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
   it('should not pass --log to geckodriver when remote.log.level is not set', async () => {
     mockSelenium();
     const { FirefoxCore } = await import('../../src/firefox/core.js');
-    const core = new FirefoxCore({ headless: true });
+    const core = new FirefoxCore({ headless: true, zenPath });
     await core.connect();
     expect(mockServiceBuilderAddArguments).not.toHaveBeenCalledWith('--log', expect.anything());
   });
@@ -107,6 +110,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
     const { FirefoxCore } = await import('../../src/firefox/core.js');
     const core = new FirefoxCore({
       headless: true,
+      zenPath,
       prefs: { 'remote.prefs.recommended': false },
     });
     await core.connect();
@@ -118,6 +122,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
     const { FirefoxCore } = await import('../../src/firefox/core.js');
     const core = new FirefoxCore({
       headless: true,
+      zenPath,
       prefs: { 'remote.prefs.recommended': false, 'app.update.disabledForTesting': false },
     });
     await core.connect();
@@ -130,6 +135,7 @@ describe('FirefoxCore prefs via firefoxOptions', () => {
     const { FirefoxCore } = await import('../../src/firefox/core.js');
     const core = new FirefoxCore({
       headless: true,
+      zenPath,
       prefs: { 'test.pref': 'value' },
     });
     await expect(core.connect()).resolves.not.toThrow();

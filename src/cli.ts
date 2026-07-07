@@ -1,13 +1,13 @@
 /**
- * CLI argument parsing for Firefox DevTools MCP server
+ * CLI argument parsing for Zen DevTools MCP server
  */
 
 import { createHash } from 'node:crypto';
-import { homedir } from 'node:os';
 import { join } from 'node:path';
 import type { Options as YargsOptions } from 'yargs';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
+import { BROWSER, profileBaseDir } from './config/browser.js';
 
 /**
  * Parsed preference value (boolean, integer, or string)
@@ -16,15 +16,15 @@ export type PrefValue = string | number | boolean;
 
 /**
  * Returns the default profile parent directory for --auto-profile mode.
- * When a Firefox binary path is given, a short hash of that path is appended
+ * When a Zen binary path is given, a short hash of that path is appended
  * so that different builds (Release, Nightly, …) each get their own profile.
  */
-export function defaultProfileDir(firefoxPath?: string): string {
-  const base = join(homedir(), '.firefox-devtools-mcp');
-  if (!firefoxPath) {
+export function defaultProfileDir(zenPath?: string): string {
+  const base = profileBaseDir();
+  if (!zenPath) {
     return join(base, 'profile');
   }
-  const hash = createHash('sha1').update(firefoxPath).digest('hex').slice(0, 8);
+  const hash = createHash('sha1').update(zenPath).digest('hex').slice(0, 8);
   return join(base, `profile-${hash}`);
 }
 
@@ -68,20 +68,22 @@ export function parsePrefs(prefs: string[] | undefined): Record<string, PrefValu
 }
 
 export const cliOptions = {
-  firefoxPath: {
+  zenPath: {
     type: 'string',
-    description: 'Path to Firefox executable (optional, uses system Firefox if not specified)',
-    alias: 'f',
+    description:
+      'Path to Zen executable. Defaults to /Applications/Zen.app/Contents/MacOS/zen on macOS when present.',
+    alias: 'z',
+    default: process.env.ZEN_PATH || undefined,
   },
   headless: {
     type: 'boolean',
-    description: 'Whether to run Firefox in headless (no UI) mode',
-    default: (process.env.FIREFOX_HEADLESS ?? 'false') === 'true',
+    description: 'Whether to run Zen in headless (no UI) mode',
+    default: (process.env.ZEN_HEADLESS ?? 'false') === 'true',
   },
   viewport: {
     type: 'string',
     description:
-      'Initial viewport size for Firefox instances. For example, `1280x720`. In headless mode, max size is 3840x2160px.',
+      'Initial viewport size for Zen instances. For example, `1280x720`. In headless mode, max size is 3840x2160px.',
     coerce: (arg: string | undefined) => {
       if (arg === undefined) {
         return;
@@ -104,30 +106,31 @@ export const cliOptions = {
   },
   profilePath: {
     type: 'string',
-    description: 'Path to Firefox profile directory (optional, for persistent profile)',
+    description:
+      'Path to Zen profile parent directory. The server creates a safe MCP subprofile in it.',
   },
   autoProfile: {
     type: 'boolean',
     description:
-      'Automatically use a persistent profile stored in ~/.firefox-devtools-mcp/. ' +
-      'When --firefox-path is set, the profile is scoped to that binary so different ' +
-      'Firefox builds stay isolated.',
-    default: (process.env.AUTO_PROFILE ?? 'false') === 'true',
+      `Automatically use a persistent profile stored in ~/${BROWSER.profileBaseDirName}/. ` +
+      'When --zen-path is set, the profile is scoped to that binary so different ' +
+      'Zen builds stay isolated.',
+    default: (process.env.AUTO_PROFILE ?? 'true') !== 'false',
   },
-  firefoxArg: {
+  zenArg: {
     type: 'array',
     description:
-      'Additional arguments for Firefox. Only applies when Firefox is launched by firefox-devtools-mcp.',
+      'Additional arguments for Zen. Use --zen-arg=--flag for values that start with --.',
   },
   startUrl: {
     type: 'string',
-    description: 'URL to open when Firefox starts (default: about:blank)',
+    description: 'URL to open when Zen starts (default: about:blank)',
     default: process.env.START_URL ?? 'about:blank',
   },
   connectExisting: {
     type: 'boolean',
     description:
-      'Connect to an already-running Firefox instance via Marionette instead of launching a new one. Requires Firefox to be running with marionette.enabled=true (set in user.js or launched with --marionette).',
+      'Connect to an already-running Zen instance via Marionette instead of launching a new one. Requires Zen to be running with marionette.enabled=true or launched with --marionette.',
     default: (process.env.CONNECT_EXISTING ?? 'false') === 'true',
   },
   marionettePort: {
@@ -138,30 +141,18 @@ export const cliOptions = {
   env: {
     type: 'array',
     description:
-      'Environment variables for Firefox in KEY=VALUE format. Can be specified multiple times. Example: --env MOZ_LOG=HTMLMediaElement:4',
+      'Environment variables for Zen in KEY=VALUE format. Can be specified multiple times. Example: --env MOZ_LOG=HTMLMediaElement:4',
   },
   outputFile: {
     type: 'string',
-    description:
-      'Path to file where Firefox output (stdout/stderr) will be written. If not specified, output is written to ~/.firefox-devtools-mcp/output/',
+    description: `Path to file where Zen output (stdout/stderr) will be written. If not specified, output is written to ~/${BROWSER.profileBaseDirName}/output/`,
   },
   pref: {
     type: 'array',
     string: true,
     description:
-      'Set Firefox preference at startup via moz:firefoxOptions (format: name=value). Can be specified multiple times.',
+      'Set Zen preference at startup via moz:firefoxOptions (format: name=value). Can be specified multiple times.',
     alias: 'p',
-  },
-  androidDevice: {
-    type: 'string',
-    description:
-      'Android device serial for launching Firefox for Android via ADB. Omit to auto-select the single connected device. Requires adb on PATH.',
-  },
-  androidPackage: {
-    type: 'string',
-    description:
-      'Android app package name (default: org.mozilla.firefox). Use org.mozilla.fenix for Nightly.',
-    default: process.env.ANDROID_PACKAGE ?? 'org.mozilla.firefox',
   },
   logFile: {
     type: 'string',
@@ -171,13 +162,13 @@ export const cliOptions = {
   enableScript: {
     type: 'boolean',
     description:
-      'Enable the script tools such as script evaluation and logpoints (Firefox 153+ required).',
+      'Enable the script tools such as script evaluation and logpoints (Gecko 153+ required).',
     default: (process.env.ENABLE_SCRIPT ?? 'false') === 'true',
   },
   enablePrivilegedContext: {
     type: 'boolean',
     description:
-      'Enable privileged context tools: list/select privileged contexts, evaluate privileged scripts, get/set Firefox prefs, and list extensions. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1.',
+      'Enable privileged context tools: list/select privileged contexts, evaluate privileged scripts, get/set Zen prefs, and list extensions. Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1.',
     default: (process.env.ENABLE_PRIVILEGED_CONTEXT ?? 'false') === 'true',
   },
 } satisfies Record<string, YargsOptions>;
@@ -186,15 +177,12 @@ export function parseArguments(version: string, argv = process.argv, includePriv
   const { enablePrivilegedContext: _, ...rest } = cliOptions;
   const options = includePrivileged ? cliOptions : rest;
   const yargsInstance = yargs(hideBin(argv))
-    .scriptName('npx firefox-devtools-mcp@latest')
+    .scriptName(`npx ${BROWSER.packageName}`)
     .options(options)
     .example([
-      [
-        '$0 --firefox-path /Applications/Firefox.app/Contents/MacOS/firefox',
-        'Use specific Firefox',
-      ],
-      ['$0 --headless', 'Run Firefox in headless mode'],
-      ['$0 --viewport 1280x720', 'Launch Firefox with viewport size of 1280x720px'],
+      ['$0 --zen-path /Applications/Zen.app/Contents/MacOS/zen', 'Use a specific Zen executable'],
+      ['$0 --headless', 'Run Zen in headless mode'],
+      ['$0 --viewport 1280x720', 'Launch Zen with viewport size of 1280x720px'],
       ['$0 --help', 'Print CLI options'],
     ]);
 

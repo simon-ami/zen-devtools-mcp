@@ -91,9 +91,9 @@ function formatPageList(
   selectedIdx: number
 ): string {
   if (tabs.length === 0) {
-    return '📄 No pages';
+    return 'No pages';
   }
-  const lines: string[] = [`📄 ${tabs.length} pages (selected: ${selectedIdx})`];
+  const lines: string[] = [`${tabs.length} pages (selected: ${selectedIdx})`];
   for (const tab of tabs) {
     const idx = tabs.indexOf(tab);
     const marker = idx === selectedIdx ? '>' : ' ';

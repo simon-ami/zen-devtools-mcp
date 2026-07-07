@@ -26,8 +26,8 @@ describe('Version helpers', () => {
       expect(compareVersions('153.0a1', '153.xyz')).toBe(0);
     });
     it('should throw on unparseable version string', () => {
-      expect(() => compareVersions('', '153.0')).toThrow('Unable to parse Firefox version');
-      expect(() => compareVersions('153.0', '')).toThrow('Unable to parse Firefox version');
+      expect(() => compareVersions('', '153.0')).toThrow('Unable to parse Gecko version');
+      expect(() => compareVersions('153.0', '')).toThrow('Unable to parse Gecko version');
     });
   });
 });

@@ -19,8 +19,8 @@ if (process.env.NODE_ENV !== 'production') {
 import { parseArguments } from './cli.js';
 import { run } from './index.js';
 
-export { FirefoxDevTools } from './firefox/index.js';
-export { FirefoxDisconnectedError, isDisconnectionError } from './utils/errors.js';
+export { ZenDevTools } from './firefox/index.js';
+export { ZenDisconnectedError, isDisconnectionError } from './utils/errors.js';
 
 run((v) => parseArguments(v, process.argv, false), import.meta.url).catch((error) => {
   console.error('Fatal error in main', error);

@@ -1,17 +1,17 @@
 /**
- * Firefox version number helpers.
+ * Gecko version number helpers.
  */
 
 function getMajorVersion(version: string): number {
   const [major, _rhs] = version.split('.');
   if (!major) {
-    throw new Error(`Unable to parse Firefox version ${version}`);
+    throw new Error(`Unable to parse Gecko version ${version}`);
   }
   return Number.parseInt(major, 10);
 }
 
 /**
- * Simplified Firefox version comparison helper, only concerned with major
+ * Simplified Gecko version comparison helper, only concerned with major
  * version checks.
  */
 export function compareVersions(versionA: string, versionB: string): number {

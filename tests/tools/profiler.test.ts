@@ -68,15 +68,15 @@ describe('Profiler Tool Handlers', () => {
     vi.clearAllMocks();
     mockGetFirefox.mockResolvedValue({
       sendBiDiCommand: mockSendBiDiCommand,
-      getFirefoxVersion: () => '154.0',
+      getGeckoVersion: () => '154.0',
     });
   });
 
   describe('version check', () => {
-    it('should return error when Firefox version is below 154', async () => {
+    it('should return error when Gecko version is below 154', async () => {
       mockGetFirefox.mockResolvedValue({
         sendBiDiCommand: mockSendBiDiCommand,
-        getFirefoxVersion: () => '153.0',
+        getGeckoVersion: () => '153.0',
       });
 
       const result = await handleProfilerIsActive({});
@@ -85,7 +85,7 @@ describe('Profiler Tool Handlers', () => {
       expect(result.content[0].text).toContain('154');
     });
 
-    it('should proceed when Firefox version is 154 or later', async () => {
+    it('should proceed when Gecko version is 154 or later', async () => {
       mockSendBiDiCommand.mockResolvedValue({ active: false });
 
       const result = await handleProfilerIsActive({});
@@ -93,10 +93,10 @@ describe('Profiler Tool Handlers', () => {
       expect(result.isError).toBeUndefined();
     });
 
-    it('should proceed when Firefox version is unknown', async () => {
+    it('should proceed when Gecko version is unknown', async () => {
       mockGetFirefox.mockResolvedValue({
         sendBiDiCommand: mockSendBiDiCommand,
-        getFirefoxVersion: () => null,
+        getGeckoVersion: () => null,
       });
       mockSendBiDiCommand.mockResolvedValue({ active: false });
 

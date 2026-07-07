@@ -9,27 +9,27 @@ import { describe, it, expect } from 'vitest';
 import { parsePrefs, parseArguments, defaultProfileDir } from '../../src/cli.js';
 
 describe('defaultProfileDir', () => {
-  const base = join(homedir(), '.firefox-devtools-mcp');
+  const base = join(homedir(), '.zen-devtools-mcp');
 
-  it('returns base profile dir when no firefox path given', () => {
+  it('returns base profile dir when no Zen path given', () => {
     expect(defaultProfileDir()).toBe(join(base, 'profile'));
     expect(defaultProfileDir(undefined)).toBe(join(base, 'profile'));
   });
 
   it('appends an 8-char hash of the binary path', () => {
-    const binaryPath = '/Applications/Firefox.app/Contents/MacOS/firefox';
+    const binaryPath = '/Applications/Zen.app/Contents/MacOS/zen';
     const hash = createHash('sha1').update(binaryPath).digest('hex').slice(0, 8);
     expect(defaultProfileDir(binaryPath)).toBe(join(base, `profile-${hash}`));
   });
 
   it('produces different dirs for different binaries', () => {
-    const release = defaultProfileDir('/usr/bin/firefox');
-    const nightly = defaultProfileDir('/opt/firefox-nightly/firefox');
+    const release = defaultProfileDir('/usr/bin/zen');
+    const nightly = defaultProfileDir('/opt/zen-nightly/zen');
     expect(release).not.toBe(nightly);
   });
 
   it('produces the same dir for the same binary path', () => {
-    const path = '/usr/bin/firefox';
+    const path = '/usr/bin/zen';
     expect(defaultProfileDir(path)).toBe(defaultProfileDir(path));
   });
 });
@@ -63,7 +63,7 @@ describe('parsePrefs', () => {
     expect(parsePrefs(['some.pref=-5'])).toEqual({ 'some.pref': -5 });
   });
 
-  it('should keep float as string (Firefox has no float pref)', () => {
+  it('should keep float as string (Gecko has no float pref)', () => {
     expect(parsePrefs(['some.pref=3.14'])).toEqual({ 'some.pref': '3.14' });
   });
 
@@ -139,5 +139,27 @@ describe('CLI --pref option', () => {
     ]);
     expect(args.pref).toContain('pref1=value1');
     expect(args.pref).toContain('pref2=value2');
+  });
+});
+
+describe('CLI Zen options', () => {
+  it('accepts --zen-path', () => {
+    const args = parseArguments('1.0.0', [
+      'node',
+      'script',
+      '--zen-path',
+      '/Applications/Zen.app/Contents/MacOS/zen',
+    ]);
+    expect(args.zenPath).toBe('/Applications/Zen.app/Contents/MacOS/zen');
+  });
+
+  it('uses auto profile by default', () => {
+    const args = parseArguments('1.0.0', ['node', 'script']);
+    expect(args.autoProfile).toBe(true);
+  });
+
+  it('accepts --zen-arg', () => {
+    const args = parseArguments('1.0.0', ['node', 'script', '--zen-arg=--marionette']);
+    expect(args.zenArg).toContain('--marionette');
   });
 });

@@ -16,7 +16,7 @@ vi.mock('@/utils/logger.js', () => ({
 }));
 
 import * as fs from 'node:fs';
-import { resolveProfilePath, isFirefoxProfile, MCP_PROFILE_DIR_NAME } from '@/firefox/profile.js';
+import { resolveProfilePath, isBrowserProfile, MCP_PROFILE_DIR_NAME } from '@/firefox/profile.js';
 
 const mockExistsSync = vi.mocked(fs.existsSync);
 const mockMkdirSync = vi.mocked(fs.mkdirSync);
@@ -24,24 +24,24 @@ const mockCopyFileSync = vi.mocked(fs.copyFileSync);
 
 const SEP = '/';
 
-describe('isFirefoxProfile', () => {
+describe('isBrowserProfile', () => {
   beforeEach(() => {
     mockExistsSync.mockReset();
   });
 
-  it('returns false when directory has no Firefox profile indicators', () => {
+  it('returns false when directory has no Gecko profile indicators', () => {
     mockExistsSync.mockReturnValue(false);
-    expect(isFirefoxProfile('/some/random/dir')).toBe(false);
+    expect(isBrowserProfile('/some/random/dir')).toBe(false);
   });
 
   it('returns true when prefs.js is present', () => {
     mockExistsSync.mockImplementation((p: unknown) => String(p).endsWith('prefs.js'));
-    expect(isFirefoxProfile('/real/profile')).toBe(true);
+    expect(isBrowserProfile('/real/profile')).toBe(true);
   });
 
   it('returns true when places.sqlite is present', () => {
     mockExistsSync.mockImplementation((p: unknown) => String(p).endsWith('places.sqlite'));
-    expect(isFirefoxProfile('/real/profile')).toBe(true);
+    expect(isBrowserProfile('/real/profile')).toBe(true);
   });
 });
 
@@ -58,16 +58,16 @@ describe('resolveProfilePath', () => {
     expect(result.path).toBe(`/custom/profiles${SEP}${MCP_PROFILE_DIR_NAME}`);
   });
 
-  it('returns null warning for a non-Firefox directory', () => {
+  it('returns null warning for a non-Gecko directory', () => {
     mockExistsSync.mockReturnValue(false);
     const result = resolveProfilePath('/custom/profiles');
     expect(result.warning).toBeNull();
   });
 
-  it('returns a warning when the parent looks like a real Firefox profile', () => {
+  it('returns a warning when the parent looks like a real Gecko profile', () => {
     mockExistsSync.mockImplementation((p: unknown) => String(p).endsWith('prefs.js'));
     const result = resolveProfilePath('/real/profile');
-    expect(result.warning).toMatch(/looks like an existing Firefox profile/);
+    expect(result.warning).toMatch(/looks like an existing Zen\/Gecko profile/);
   });
 
   it('creates the MCP subfolder when it does not exist yet', () => {

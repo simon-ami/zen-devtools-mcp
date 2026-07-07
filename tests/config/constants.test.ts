@@ -12,8 +12,8 @@ describe('Constants', () => {
       expect(typeof SERVER_NAME).toBe('string');
     });
 
-    it('should be firefox-devtools', () => {
-      expect(SERVER_NAME).toBe('firefox-devtools');
+    it('should be zen-devtools', () => {
+      expect(SERVER_NAME).toBe('zen-devtools');
     });
   });
 
@@ -23,7 +23,7 @@ describe('Constants', () => {
     });
 
     it('should match package.json version', () => {
-      expect(SERVER_VERSION).toBe('0.7.1');
+      expect(SERVER_VERSION).toBe('0.1.0');
     });
 
     it('should be a non-empty string', () => {

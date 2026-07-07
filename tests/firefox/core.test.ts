@@ -273,6 +273,7 @@ describe('FirefoxCore connect() profile handling', () => {
     const profilePath = '/path/to/test/profile';
     const core = new FirefoxCore({
       headless: true,
+      zenPath: '/Applications/Zen.app/Contents/MacOS/zen',
       profilePath,
     });
 
@@ -284,7 +285,7 @@ describe('FirefoxCore connect() profile handling', () => {
     // The MCP uses a dedicated subfolder, not the raw profilePath
     expect(mockAddArguments).toHaveBeenCalledWith(
       '--profile',
-      '/path/to/test/profile/firefox_devtools_mcp_profile'
+      '/path/to/test/profile/zen_devtools_mcp_profile'
     );
   });
 });

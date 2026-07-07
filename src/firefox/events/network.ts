@@ -55,7 +55,7 @@ export class NetworkEvents {
       await bidi.subscribe('browsingContext.domContentLoaded', contextId ? [contextId] : undefined);
     } catch {
       logDebug(
-        'Navigation events subscription skipped (may not be available in this Firefox version)'
+        'Navigation events subscription skipped (may not be available in this Gecko version)'
       );
     }
 

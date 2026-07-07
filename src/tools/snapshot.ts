@@ -124,7 +124,7 @@ export async function handleTakeSnapshot(args: unknown): Promise<McpToolResponse
     const displayLines = truncated ? lines.slice(0, maxLines) : lines;
 
     // Build compact output
-    let output = `📸 Snapshot (id=${snapshot.json.snapshotId})`;
+    let output = `Snapshot (id=${snapshot.json.snapshotId})`;
     if (selector) {
       output += ` [selector: ${selector}]`;
     }
@@ -186,7 +186,7 @@ export async function handleClearSnapshot(_args: unknown): Promise<McpToolRespon
 
     firefox.clearSnapshot();
 
-    return successResponse('🧹 Snapshot cleared');
+    return successResponse('Snapshot cleared');
   } catch (error) {
     return errorResponse(error as Error);
   }

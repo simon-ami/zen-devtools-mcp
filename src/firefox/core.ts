@@ -10,6 +10,7 @@ import { join, delimiter } from 'node:path';
 import type { FirefoxLaunchOptions } from './types.js';
 import { log, logDebug } from '../utils/logger.js';
 import { resolveProfilePath } from './profile.js';
+import { BROWSER, defaultZenPath, detectZenMetadata } from '../config/browser.js';
 
 // ---------------------------------------------------------------------------
 // Geckodriver binary finder
@@ -55,7 +56,7 @@ function findGeckodriverInSeleniumCache(binaryName: string): string | null {
 async function findGeckodriverInNpmPackage(): Promise<string | null> {
   try {
     const { download } = await import('geckodriver');
-    log('geckodriver not found in PATH or selenium cache, downloading via npm package...');
+    log('geckodriver not found in PATH or selenium cache, resolving from npm package...');
     return await download();
   } catch {
     return null;
@@ -87,7 +88,8 @@ async function findGeckodriver(): Promise<string> {
 export class FirefoxCore {
   private currentContextId: string | null = null;
   private driver: WebDriver | null = null;
-  private firefoxVersion: string | null = null;
+  private zenVersion: string | null = null;
+  private geckoVersion: string | null = null;
   private logFileFd: number | undefined;
   private logFilePath: string | undefined;
   private originalEnv: Record<string, string | undefined> = {};
@@ -96,61 +98,31 @@ export class FirefoxCore {
   constructor(private options: FirefoxLaunchOptions) {}
 
   /**
-   * Launch Firefox (or connect to an existing instance) and establish BiDi connection
+   * Launch Zen (or connect to an existing instance) and establish BiDi connection
    */
   async connect(): Promise<void> {
-    const isAndroid = this.options.androidDevice !== undefined;
-
-    if (isAndroid) {
-      log('Launching Firefox for Android via ADB...');
-    } else if (this.options.connectExisting) {
-      log('Connecting to existing Firefox via Marionette...');
+    if (this.options.connectExisting) {
+      log('Connecting to existing Zen via Marionette...');
     } else {
-      log('Launching Firefox via Selenium WebDriver BiDi...');
+      log('Launching Zen via Selenium WebDriver BiDi...');
     }
 
-    if (isAndroid) {
-      // Pre-set the geckodriver path so selenium-webdriver skips getBinaryPaths(),
-      // which would otherwise discover the desktop Firefox binary and inject it into
-      // moz:firefoxOptions.binary — conflicting with androidPackage.
-      const geckodriverPath = await findGeckodriver();
-      logDebug(`Using geckodriver: ${geckodriverPath}`);
-
-      const pkg = this.options.androidPackage ?? 'org.mozilla.firefox';
-      const mozOptions: Record<string, unknown> = { androidPackage: pkg };
-      const deviceSerial = this.options.androidDevice;
-      if (deviceSerial && deviceSerial !== 'auto') {
-        mozOptions.androidDeviceSerial = deviceSerial;
-      }
-      if (this.options.prefs) {
-        mozOptions.prefs = this.options.prefs;
-      }
-
-      const caps = new Capabilities();
-      caps.set('webSocketUrl', true);
-      caps.set('moz:firefoxOptions', mozOptions);
-      if (this.options.acceptInsecureCerts) {
-        caps.set('acceptInsecureCerts', true);
-      }
-
-      const serviceBuilder = new firefox.ServiceBuilder(geckodriverPath);
-      this.driver = firefox.Driver.createSession(caps, serviceBuilder.build());
-    } else if (this.options.connectExisting) {
+    if (this.options.connectExisting) {
       const port = this.options.marionettePort ?? 2828;
 
       const geckodriverPath = await findGeckodriver();
       logDebug(`Using geckodriver: ${geckodriverPath}`);
 
-      // Build a geckodriver service that connects to the running Firefox.
+      // Build a geckodriver service that connects to the running Zen.
       // ServiceBuilder already knows about --connect-existing and skips --websocket-port.
       const serviceBuilder = new firefox.ServiceBuilder(geckodriverPath);
       serviceBuilder.addArguments('--connect-existing', `--marionette-port=${port}`);
 
       // Use minimal capabilities: only request webSocketUrl for BiDi.
-      // Deliberately avoid firefox.Options() here — its constructor sets
+      // Deliberately avoid firefox.Options() here: its constructor sets
       // moz:firefoxOptions.prefs.remote.active-protocols = 1, which geckodriver
-      // may apply to the running Firefox via Marionette. Changing that preference
-      // on a live Firefox can disrupt the Remote Agent and leave the Marionette
+      // may apply to the running browser via Marionette. Changing that preference
+      // on a live Zen can disrupt the Remote Agent and leave the Marionette
       // session in a locked state that blocks reconnection.
       const caps = new Capabilities();
       caps.set('webSocketUrl', true);
@@ -160,17 +132,25 @@ export class FirefoxCore {
       // which would otherwise invoke selenium-manager with --browser firefox.
       this.driver = firefox.Driver.createSession(caps, serviceBuilder.build());
     } else {
-      // Set up output file for capturing Firefox stdout/stderr
+      const zenPath = this.options.zenPath ?? defaultZenPath();
+      if (!zenPath) {
+        throw new Error(
+          `Zen executable not found. Pass --zen-path or set ZEN_PATH. Expected macOS default: ${BROWSER.defaultMacOSBinary}`
+        );
+      }
+      this.options.zenPath = zenPath;
+
+      // Set up output file for capturing Zen stdout/stderr
       if (this.options.logFile) {
         this.logFilePath = this.options.logFile;
       } else if (this.options.env && Object.keys(this.options.env).length > 0) {
-        const outputDir = join(homedir(), '.firefox-devtools-mcp', 'output');
+        const outputDir = join(homedir(), BROWSER.profileBaseDirName, 'output');
         mkdirSync(outputDir, { recursive: true });
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
-        this.logFilePath = join(outputDir, `firefox-${timestamp}.log`);
+        this.logFilePath = join(outputDir, `${BROWSER.outputLogPrefix}-${timestamp}.log`);
       }
 
-      // Set environment variables (will be inherited by geckodriver -> Firefox)
+      // Set environment variables inherited by geckodriver and Zen.
       if (this.options.env) {
         for (const [key, value] of Object.entries(this.options.env)) {
           this.originalEnv[key] = process.env[key];
@@ -185,7 +165,7 @@ export class FirefoxCore {
         }
       }
 
-      // Standard path: launch a new Firefox via selenium-webdriver
+      // Standard path: launch a new Zen via selenium-webdriver's Firefox/geckodriver API.
       const firefoxOptions = new firefox.Options();
       firefoxOptions.enableBidi();
 
@@ -198,22 +178,20 @@ export class FirefoxCore {
           height: this.options.viewport.height,
         });
       }
-      if (this.options.firefoxPath) {
-        firefoxOptions.setBinary(this.options.firefoxPath);
-      }
+      firefoxOptions.setBinary(zenPath);
       if (this.options.args && this.options.args.length > 0) {
         firefoxOptions.addArguments(...this.options.args);
       }
       if (this.options.profilePath) {
         // Resolve to a dedicated MCP subfolder to avoid exposing a real user profile.
         // resolveProfilePath creates the directory on first use and warns when the
-        // provided path already looks like a real Firefox profile.
+        // provided path already looks like a real Gecko profile.
         const { path: resolvedProfilePath, warning } = resolveProfilePath(this.options.profilePath);
         this.profileWarning = warning;
-        // Use Firefox's native --profile argument for reliable profile loading
+        // Use the native --profile argument for reliable profile loading
         // (Selenium's setProfile() copies to temp dir which can be unreliable)
         firefoxOptions.addArguments('--profile', resolvedProfilePath);
-        log(`Using Firefox profile: ${resolvedProfilePath}`);
+        log(`Using Zen profile: ${resolvedProfilePath}`);
       }
       if (this.options.acceptInsecureCerts) {
         firefoxOptions.setAcceptInsecureCerts(true);
@@ -230,24 +208,15 @@ export class FirefoxCore {
         }
       }
 
-      let serviceBuilder;
-      if (process.platform === 'win32') {
-        // On windows, firefox.ServiceBuilder() invoked from the MCP will hang.
-        // geckodriver has to be in the PATH. See Bug 2040849.
-        const geckodriverPath = await findGeckodriver();
-        logDebug(`Using geckodriver: ${geckodriverPath}`);
-        serviceBuilder = new firefox.ServiceBuilder(geckodriverPath);
-      } else {
-        // On other platforms, the default ServiceBuilder should locate and
-        // start geckodriver successfully.
-        serviceBuilder = new firefox.ServiceBuilder();
-      }
+      const geckodriverPath = await findGeckodriver();
+      logDebug(`Using geckodriver: ${geckodriverPath}`);
+      const serviceBuilder = new firefox.ServiceBuilder(geckodriverPath);
 
       if (this.logFilePath) {
         // Open file for appending, create if doesn't exist
         this.logFileFd = openSync(this.logFilePath, 'a');
         serviceBuilder.setStdio(['ignore', this.logFileFd, this.logFileFd]);
-        log(`Capturing Firefox output to: ${this.logFilePath}`);
+        log(`Capturing Zen output to: ${this.logFilePath}`);
       }
 
       const remoteLogLevel = this.options.prefs?.['remote.log.level'];
@@ -262,14 +231,18 @@ export class FirefoxCore {
         .build();
     }
 
-    log(
-      this.options.connectExisting ? 'Connected to existing Firefox' : 'Firefox launched with BiDi'
-    );
+    log(this.options.connectExisting ? 'Connected to existing Zen' : 'Zen launched with BiDi');
 
-    // Retrieve the Firefox version from the returned capabilities.
     const driverCapabilities = await this.driver.getCapabilities();
-    this.firefoxVersion = (driverCapabilities.get('browserVersion') as string) ?? null;
-    logDebug(`Browser version: ${this.firefoxVersion}`);
+    const capabilitiesVersion = (driverCapabilities.get('browserVersion') as string) ?? null;
+    const metadata = detectZenMetadata(
+      this.options.zenPath ?? defaultZenPath(),
+      capabilitiesVersion
+    );
+    this.zenVersion = metadata.zenVersion;
+    this.geckoVersion = metadata.geckoVersion;
+    logDebug(`Zen version: ${this.zenVersion ?? '(unknown)'}`);
+    logDebug(`Gecko version: ${this.geckoVersion ?? '(unknown)'}`);
 
     // Remember current window handle (browsing context)
     this.currentContextId = await this.driver.getWindowHandle();
@@ -281,7 +254,7 @@ export class FirefoxCore {
       logDebug(`Navigated to: ${this.options.startUrl}`);
     }
 
-    log('Firefox DevTools ready');
+    log('Zen DevTools ready');
   }
 
   /**
@@ -295,8 +268,8 @@ export class FirefoxCore {
   }
 
   /**
-   * Check if Firefox is still connected and responsive
-   * Returns false if Firefox was closed or connection is broken
+   * Check if Zen is still connected and responsive
+   * Returns false if Zen was closed or connection is broken
    */
   async isConnected(): Promise<boolean> {
     if (!this.driver) {
@@ -307,7 +280,7 @@ export class FirefoxCore {
       await this.driver.getWindowHandle();
       return true;
     } catch {
-      logDebug('Connection check failed: Firefox is not responsive');
+      logDebug('Connection check failed: Zen is not responsive');
       return false;
     }
   }
@@ -327,10 +300,18 @@ export class FirefoxCore {
   }
 
   /**
-   * Get the current firefox version, as a string (eg "153.0a1")
+   * Get the Gecko version used for protocol capability checks.
    */
   getFirefoxVersion(): string | null {
-    return this.firefoxVersion;
+    return this.geckoVersion;
+  }
+
+  getZenVersion(): string | null {
+    return this.zenVersion;
+  }
+
+  getGeckoVersion(): string | null {
+    return this.geckoVersion;
   }
 
   /**
@@ -472,7 +453,7 @@ export class FirefoxCore {
     }
 
     // In connect-existing mode, geckodriver's DELETE /session releases Marionette
-    // without terminating Firefox (since geckodriver was started with --connect-existing).
+    // without terminating Zen (since geckodriver was started with --connect-existing).
     if ('quit' in webdriver) {
       let timer: NodeJS.Timeout;
       try {
@@ -517,6 +498,6 @@ export class FirefoxCore {
     }
     this.originalEnv = {};
 
-    log('Firefox DevTools closed');
+    log('Zen DevTools closed');
   }
 }

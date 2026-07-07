@@ -1,15 +1,15 @@
 import { successResponse, errorResponse } from '../utils/response-helpers.js';
 import { compareVersions } from '../utils/version.js';
-import type { FirefoxDevTools } from '../firefox/index.js';
+import type { ZenDevTools } from '../firefox/index.js';
 import type { McpToolResponse } from '../types/common.js';
 
-const MIN_FIREFOX_VERSION = '154.0';
+const MIN_GECKO_VERSION = '154.0';
 
-function checkProfilerSupported(firefox: FirefoxDevTools): void {
-  const version = firefox.getFirefoxVersion();
-  if (version !== null && compareVersions(version, MIN_FIREFOX_VERSION) < 0) {
+function checkProfilerSupported(firefox: ZenDevTools): void {
+  const version = firefox.getGeckoVersion();
+  if (version !== null && compareVersions(version, MIN_GECKO_VERSION) < 0) {
     throw new Error(
-      `moz:profiler requires Firefox ${MIN_FIREFOX_VERSION.split('.')[0]} or later (connected: ${version})`
+      `moz:profiler requires Gecko ${MIN_GECKO_VERSION.split('.')[0]} or later (connected: ${version})`
     );
   }
 }
@@ -31,7 +31,7 @@ const VALID_PRESETS = [
 
 export const profilerIsActiveTool = {
   name: 'profiler_is_active',
-  description: 'Check whether the Firefox profiler is currently recording.',
+  description: 'Check whether the Gecko profiler is currently recording.',
   inputSchema: {
     type: 'object',
     properties: {},
@@ -58,7 +58,7 @@ export async function handleProfilerIsActive(_args: unknown): Promise<McpToolRes
 
 export const profilerStartTool = {
   name: 'profiler_start',
-  description: `Start the Firefox profiler. Provide either a preset name or explicit recording options (entries, interval, features, threads). Cannot combine both. Valid presets: ${VALID_PRESETS.join(', ')}.`,
+  description: `Start the Gecko profiler. Provide either a preset name or explicit recording options (entries, interval, features, threads). Cannot combine both. Valid presets: ${VALID_PRESETS.join(', ')}.`,
   inputSchema: {
     type: 'object',
     properties: {
@@ -151,7 +151,7 @@ export async function handleProfilerStart(args: unknown): Promise<McpToolRespons
 export const profilerStopTool = {
   name: 'profiler_stop',
   description:
-    'Stop the Firefox profiler and save the recorded profile to a file in the downloads directory. Returns the path to the saved file, or null when nothing was saved.',
+    'Stop the Gecko profiler and save the recorded profile to a file in the downloads directory. Returns the path to the saved file, or null when nothing was saved.',
   inputSchema: {
     type: 'object',
     properties: {

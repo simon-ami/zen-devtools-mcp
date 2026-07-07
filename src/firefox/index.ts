@@ -1,5 +1,5 @@
 /**
- * Firefox Client - Public facade for modular Firefox automation
+ * Gecko browser client - public facade for modular Zen automation
  */
 
 import type { FirefoxLaunchOptions, ConsoleMessage, LogpointResult } from './types.js';
@@ -12,7 +12,7 @@ import { PageManagement } from './pages.js';
 import { SnapshotManager, type Snapshot, type SnapshotOptions } from './snapshot/index.js';
 
 /**
- * Main Firefox Client facade
+ * Main browser client facade
  * Delegates to modular components for clean separation of concerns
  */
 export class FirefoxClient {
@@ -49,8 +49,8 @@ export class FirefoxClient {
 
     // Initialize event modules with lifecycle hooks.
     // BiDi (console/network events) is available in both launch and connect-existing
-    // modes, provided Firefox has its Remote Agent running. If webSocketUrl is absent
-    // from the session capabilities (e.g. Firefox started without --remote-debugging-port),
+    // modes, provided Zen has its Remote Agent running. If webSocketUrl is absent
+    // from the session capabilities (e.g. Zen started without --remote-debugging-port),
     // the subscribe calls below will fail gracefully and the modules will be disabled.
     const hasBidi = 'getBidi' in driver && typeof driver.getBidi === 'function';
 
@@ -84,7 +84,7 @@ export class FirefoxClient {
     );
 
     // Subscribe to console and network events for ALL contexts (not just current).
-    // Failures here are non-fatal: Firefox may not have the Remote Agent / BiDi
+    // Failures here are non-fatal: Zen may not have the Remote Agent / BiDi
     // enabled (e.g. launched with --marionette only, no --remote-debugging-port),
     // in which case webSocketUrl is absent from capabilities and getBidi() throws.
     // We degrade gracefully so all non-BiDi tools still work.
@@ -92,7 +92,7 @@ export class FirefoxClient {
       try {
         await this.consoleEvents.subscribe(undefined);
       } catch {
-        logDebug('Console events unavailable (BiDi not supported by this Firefox session)');
+        logDebug('Console events unavailable (BiDi not supported by this Zen session)');
         this.consoleEvents = null;
       }
     }
@@ -100,7 +100,7 @@ export class FirefoxClient {
       try {
         await this.networkEvents.subscribe(undefined);
       } catch {
-        logDebug('Network events unavailable (BiDi not supported by this Firefox session)');
+        logDebug('Network events unavailable (BiDi not supported by this Zen session)');
         this.networkEvents = null;
       }
     }
@@ -108,7 +108,7 @@ export class FirefoxClient {
       try {
         await this.debuggingEvents.subscribe();
       } catch {
-        logDebug('Debugging events unavailable (BiDi not supported by this Firefox session)');
+        logDebug('Debugging events unavailable (BiDi not supported by this Zen session)');
         this.debuggingEvents = null;
       }
     }
@@ -218,7 +218,7 @@ export class FirefoxClient {
   async getConsoleMessages(): Promise<ConsoleMessage[]> {
     if (!this.consoleEvents) {
       throw new Error(
-        'Console events not available (Firefox Remote Agent not running — start Firefox with --remote-debugging-port to enable BiDi)'
+        'Console events not available (Zen Remote Agent not running; start Zen with --remote-debugging-port to enable BiDi)'
       );
     }
     return this.consoleEvents.getMessages();
@@ -227,7 +227,7 @@ export class FirefoxClient {
   clearConsoleMessages(): void {
     if (!this.consoleEvents) {
       throw new Error(
-        'Console events not available (Firefox Remote Agent not running — start Firefox with --remote-debugging-port to enable BiDi)'
+        'Console events not available (Zen Remote Agent not running; start Zen with --remote-debugging-port to enable BiDi)'
       );
     }
     this.consoleEvents.clearMessages();
@@ -330,7 +330,7 @@ export class FirefoxClient {
   async startNetworkMonitoring(): Promise<void> {
     if (!this.networkEvents) {
       throw new Error(
-        'Network events not available (Firefox Remote Agent not running — start Firefox with --remote-debugging-port to enable BiDi)'
+        'Network events not available (Zen Remote Agent not running; start Zen with --remote-debugging-port to enable BiDi)'
       );
     }
     this.networkEvents.startMonitoring();
@@ -339,7 +339,7 @@ export class FirefoxClient {
   async stopNetworkMonitoring(): Promise<void> {
     if (!this.networkEvents) {
       throw new Error(
-        'Network events not available (Firefox Remote Agent not running — start Firefox with --remote-debugging-port to enable BiDi)'
+        'Network events not available (Zen Remote Agent not running; start Zen with --remote-debugging-port to enable BiDi)'
       );
     }
     this.networkEvents.stopMonitoring();
@@ -348,7 +348,7 @@ export class FirefoxClient {
   async getNetworkRequests(): Promise<any[]> {
     if (!this.networkEvents) {
       throw new Error(
-        'Network events not available (Firefox Remote Agent not running — start Firefox with --remote-debugging-port to enable BiDi)'
+        'Network events not available (Zen Remote Agent not running; start Zen with --remote-debugging-port to enable BiDi)'
       );
     }
     return this.networkEvents.getRequests();
@@ -357,7 +357,7 @@ export class FirefoxClient {
   clearNetworkRequests(): void {
     if (!this.networkEvents) {
       throw new Error(
-        'Network events not available (Firefox Remote Agent not running — start Firefox with --remote-debugging-port to enable BiDi)'
+        'Network events not available (Zen Remote Agent not running; start Zen with --remote-debugging-port to enable BiDi)'
       );
     }
     this.networkEvents.clearRequests();
@@ -450,8 +450,8 @@ export class FirefoxClient {
   }
 
   /**
-   * Check if Firefox is still connected and responsive
-   * Returns false if Firefox was closed or connection is broken
+   * Check if Zen is still connected and responsive
+   * Returns false if Zen was closed or connection is broken
    */
   async isConnected(): Promise<boolean> {
     return await this.core.isConnected();
@@ -463,6 +463,14 @@ export class FirefoxClient {
    */
   getFirefoxVersion(): string | null {
     return this.core.getFirefoxVersion();
+  }
+
+  getZenVersion(): string | null {
+    return this.core.getZenVersion();
+  }
+
+  getGeckoVersion(): string | null {
+    return this.core.getGeckoVersion();
   }
 
   /**
@@ -548,4 +556,4 @@ export class FirefoxClient {
 export type { Snapshot } from './snapshot/index.js';
 
 // Re-export for backward compatibility
-export { FirefoxClient as FirefoxDevTools };
+export { FirefoxClient as ZenDevTools };
