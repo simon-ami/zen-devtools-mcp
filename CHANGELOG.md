@@ -8,4 +8,4 @@
 - Added Zen and Gecko version detection from Zen app resources.
 - Renamed public management tools to `get_zen_info`, `get_zen_output`, `restart_zen`, `set_zen_prefs`, and `get_zen_prefs`.
 - Removed public Firefox Android CLI/docs from this fork.
-- Disabled inherited npm publishing workflow.
+- Replaced inherited npm publishing with a Zen-only publish workflow for `zen-devtools-mcp`.

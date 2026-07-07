@@ -1,11 +1,51 @@
-name: Publish disabled
+name: Publish to npm
 
 on:
+  release:
+    types: [published]
   workflow_dispatch:
 
 jobs:
-  disabled:
+  publish:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
     steps:
-      - name: Explain status
-        run: echo "npm publishing is disabled for this personal Zen fork."
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v5
+        with:
+          node-version: 24
+          registry-url: 'https://registry.npmjs.org/'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run checks
+        run: |
+          npm run typecheck
+          npm run lint
+          npm run format:check
+          npm run test:unit
+          npm run build
+
+      - name: Check package version
+        id: package
+        run: |
+          name=$(node -p "require('./package.json').name")
+          version=$(node -p "require('./package.json').version")
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "$name@$version is already published; skipping npm publish."
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish package
+        if: steps.package.outputs.exists != 'true'
+        run: npm publish --access public --provenance

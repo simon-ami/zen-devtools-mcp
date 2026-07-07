@@ -1,8 +1,10 @@
 # Zen DevTools MCP
 
-Model Context Protocol server for automating Zen Browser through Selenium WebDriver, geckodriver, and WebDriver BiDi.
+Unofficial Model Context Protocol server for automating Zen Browser through Selenium WebDriver, geckodriver, and WebDriver BiDi.
 
 This is a Zen-first fork of Mozilla's Firefox DevTools MCP server. The public package, CLI, MCP server name, logs, profile paths, and management tools use Zen naming. The lower-level implementation still uses Selenium's Firefox/geckodriver APIs because Gecko automation is exposed through `moz:firefoxOptions`, `Browser.FIREFOX`, and `moz:*` WebDriver BiDi commands.
+
+This project is maintained independently and is not affiliated with or endorsed by Zen Browser.
 
 ## Security
 
