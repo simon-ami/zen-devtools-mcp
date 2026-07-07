@@ -30,13 +30,9 @@ jobs:
       - name: Test
         run: npm run test:unit
 
-      - name: Create archive
-        run: tar -czf zen-devtools-mcp-${{ github.ref_name }}.tar.gz dist package.json README.md LICENSE-MIT LICENSE-APACHE
-
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: zen-devtools-mcp-${{ github.ref_name }}.tar.gz
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

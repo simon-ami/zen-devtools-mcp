@@ -4,7 +4,7 @@ CI runs linting, formatting checks, typechecking, build, and unit tests. It inte
 
 Releases follow the upstream two-step shape, adapted for this fork:
 
-1. Pushing a `v*` tag runs the release workflow. It builds, runs unit tests, creates a `zen-devtools-mcp-*` archive, and creates a GitHub release with generated release notes.
+1. Pushing a `v*` tag runs the release workflow. It builds, runs unit tests, and creates a GitHub release with generated release notes, matching the upstream release-page style.
 2. Publishing a GitHub release runs the npm publish workflow. It typechecks, lints, checks formatting, runs unit tests, builds, and publishes the single `zen-devtools-mcp` package with npm provenance. If that exact package version is already published, the workflow skips npm publishing instead of failing.
 
 This fork does not publish any Mozilla package names or the upstream privileged `moz` package.
