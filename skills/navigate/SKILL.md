@@ -1,25 +1,25 @@
 ---
 name: navigate
-description: Navigate Firefox to a URL and take a DOM snapshot for interaction
+description: Navigate Zen to a URL and take a DOM snapshot for interaction
 argument-hint: <url>
 ---
 
-# /firefox-devtools-mcp:navigate
+# /zen-devtools-mcp:navigate
 
-Opens a URL in Firefox and takes a DOM snapshot for interaction.
+Opens a URL in Zen and takes a DOM snapshot for interaction.
 
 ## Usage
 
 ```
-/firefox-devtools-mcp:navigate <url>
+/zen-devtools-mcp:navigate <url>
 ```
 
 ## Examples
 
 ```
-/firefox-devtools-mcp:navigate https://example.com
-/firefox-devtools-mcp:navigate https://github.com/login
-/firefox-devtools-mcp:navigate file:///path/to/local.html
+/zen-devtools-mcp:navigate https://example.com
+/zen-devtools-mcp:navigate https://github.com/login
+/zen-devtools-mcp:navigate file:///path/to/local.html
 ```
 
 ## What Happens

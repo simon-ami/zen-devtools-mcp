@@ -6,7 +6,7 @@
  * Saves screenshots to temp/ directory for visual inspection
  */
 
-import { FirefoxDevTools } from '../dist/index.js';
+import { ZenDevTools } from '../dist/index.js';
 import { writeFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -31,57 +31,57 @@ async function saveScreenshot(base64Data, filename) {
   const filepath = join(TEMP_DIR, filename);
   await writeFile(filepath, buffer);
 
-  console.log(`   💾 Saved: ${filepath} (${(buffer.length / 1024).toFixed(2)} KB)`);
+  console.log(`    Saved: ${filepath} (${(buffer.length / 1024).toFixed(2)} KB)`);
   return filepath;
 }
 
 async function main() {
-  console.log('📷 Testing Screenshot Functionality...\n');
+  console.log(' Testing Screenshot Functionality...\n');
 
-  const firefox = new FirefoxDevTools({
-    firefoxPath: process.env.FIREFOX_PATH,
+  const zen = new ZenDevTools({
+    zenPath: process.env.ZEN_PATH,
     headless: false,
     startUrl: 'about:blank',
   });
 
   try {
-    console.log('📡 Connecting to Firefox...');
-    await firefox.connect();
-    console.log('✅ Connected!\n');
+    console.log(' Connecting to Zen...');
+    await zen.connect();
+    console.log(' Connected!\n');
 
     // Online tests (optional)
     if (shouldRunOnlineTests()) {
       // Test 1: Screenshot of example.com
-      console.log('🌐 Test 1: Full page screenshot (example.com)');
-      await firefox.navigate('https://example.com');
+      console.log(' Test 1: Full page screenshot (example.com)');
+      await zen.navigate('https://example.com');
       await waitShort(2000);
 
-      const examplePageScreenshot = await firefox.takeScreenshotPage();
+      const examplePageScreenshot = await zen.takeScreenshotPage();
       await saveScreenshot(examplePageScreenshot, 'screenshot-example-page.png');
-      console.log(`   ✅ Screenshot captured (${examplePageScreenshot.length} chars base64)\n`);
+      console.log(`    Screenshot captured (${examplePageScreenshot.length} chars base64)\n`);
 
       // Test 2: Screenshot of specific element (heading)
-      console.log('🎯 Test 2: Element screenshot (h1 heading)');
-      const snapshot1 = await firefox.takeSnapshot();
+      console.log(' Test 2: Element screenshot (h1 heading)');
+      const snapshot1 = await zen.takeSnapshot();
       const h1Node = snapshot1.json.root.children?.find((n) => n.tag === 'h1');
 
       if (h1Node && h1Node.uid) {
         console.log(`   Found: <h1> with UID ${h1Node.uid}`);
-        const h1Screenshot = await firefox.takeScreenshotByUid(h1Node.uid);
+        const h1Screenshot = await zen.takeScreenshotByUid(h1Node.uid);
         await saveScreenshot(h1Screenshot, 'screenshot-example-h1.png');
-        console.log(`   ✅ Element screenshot captured (${h1Screenshot.length} chars base64)\n`);
+        console.log(`    Element screenshot captured (${h1Screenshot.length} chars base64)\n`);
       } else {
-        console.log('   ⚠️ No h1 element found\n');
+        console.log('    No h1 element found\n');
       }
     } else {
       skipOnlineTest('Online screenshot tests (example.com)');
     }
 
     // Test 3: Custom HTML page with styled elements (OFFLINE)
-    console.log('🎨 Test 3: Custom styled page (offline)');
+    console.log(' Test 3: Custom styled page (offline)');
 
     await loadHTML(
-      firefox,
+      zen,
       `
 <head><title>Screenshot Test</title><style>
 body { font-family: Arial; padding: 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); margin: 0; min-height: 100vh; }
@@ -92,7 +92,7 @@ h1 { color: #667eea; margin: 0 0 20px 0; font-size: 36px; }
 p { color: #555; line-height: 1.6; font-size: 16px; }
 </style></head><body>
 <div class="card">
-<h1 id="title">🎯 Screenshot Test Page</h1>
+<h1 id="title"> Screenshot Test Page</h1>
 <p id="description">This is a beautifully styled test page for screenshot functionality. The gradient background and card design showcase visual capture capabilities.</p>
 <button class="button" id="btn1">Primary Action</button>
 <button class="button" id="btn2">Secondary Action</button>
@@ -103,14 +103,14 @@ p { color: #555; line-height: 1.6; font-size: 16px; }
 
     await waitShort(500);
 
-    const customPageScreenshot = await firefox.takeScreenshotPage();
+    const customPageScreenshot = await zen.takeScreenshotPage();
     await saveScreenshot(customPageScreenshot, 'screenshot-custom-page.png');
-    console.log(`   ✅ Full page screenshot captured\n`);
+    console.log(`    Full page screenshot captured\n`);
 
     // Test 4: Screenshot of styled elements using UID
-    console.log('🎨 Test 4: Individual styled elements (via UID)');
+    console.log(' Test 4: Individual styled elements (via UID)');
 
-    const snapshot = await firefox.takeSnapshot();
+    const snapshot = await zen.takeSnapshot();
 
     // Find h1 element
     const findElement = (node, tag) => {
@@ -126,25 +126,25 @@ p { color: #555; line-height: 1.6; font-size: 16px; }
 
     const h1 = findElement(snapshot.json.root, 'h1');
     if (h1 && h1.uid) {
-      const h1Screenshot = await firefox.takeScreenshotByUid(h1.uid);
+      const h1Screenshot = await zen.takeScreenshotByUid(h1.uid);
       await saveScreenshot(h1Screenshot, 'screenshot-custom-h1.png');
-      console.log(`   ✅ H1 screenshot captured via UID`);
+      console.log(`    H1 screenshot captured via UID`);
     }
 
     // Find first button
     const button = findElement(snapshot.json.root, 'button');
     if (button && button.uid) {
-      const buttonScreenshot = await firefox.takeScreenshotByUid(button.uid);
+      const buttonScreenshot = await zen.takeScreenshotByUid(button.uid);
       await saveScreenshot(buttonScreenshot, 'screenshot-custom-button.png');
-      console.log(`   ✅ Button screenshot captured via UID\n`);
+      console.log(`    Button screenshot captured via UID\n`);
     }
 
     // Test 5: Screenshot using direct CSS selectors (fallback method)
-    console.log('🎨 Test 5: Individual styled elements (via CSS selectors)');
+    console.log(' Test 5: Individual styled elements (via CSS selectors)');
 
     try {
       // Get element via evaluate and take screenshot using WebDriver directly
-      const driver = firefox.getDriver();
+      const driver = zen.getDriver();
 
       // Screenshot title
       const titleEl = await driver.findElement({ css: '#title' });
@@ -152,7 +152,7 @@ p { color: #555; line-height: 1.6; font-size: 16px; }
       await waitShort(200);
       const titleScreenshot = await titleEl.takeScreenshot();
       await saveScreenshot(titleScreenshot, 'screenshot-custom-title.png');
-      console.log(`   ✅ Title screenshot captured`);
+      console.log(`    Title screenshot captured`);
 
       // Screenshot second button (avoid conflict with UID test)
       const buttonEl = await driver.findElement({ css: '#btn2' });
@@ -160,7 +160,7 @@ p { color: #555; line-height: 1.6; font-size: 16px; }
       await waitShort(200);
       const buttonScreenshot = await buttonEl.takeScreenshot();
       await saveScreenshot(buttonScreenshot, 'screenshot-custom-button2.png');
-      console.log(`   ✅ Button screenshot captured`);
+      console.log(`    Button screenshot captured`);
 
       // Screenshot card container
       const cardEl = await driver.findElement({ css: '.card' });
@@ -168,22 +168,22 @@ p { color: #555; line-height: 1.6; font-size: 16px; }
       await waitShort(200);
       const cardScreenshot = await cardEl.takeScreenshot();
       await saveScreenshot(cardScreenshot, 'screenshot-custom-card.png');
-      console.log(`   ✅ Card screenshot captured\n`);
+      console.log(`    Card screenshot captured\n`);
     } catch (error) {
-      console.log(`   ⚠️ Element screenshot failed: ${error.message}\n`);
+      console.log(`    Element screenshot failed: ${error.message}\n`);
     }
 
-    console.log('✅ All screenshot tests completed! 🎉');
-    console.log(`\n📁 Screenshots saved to: ${TEMP_DIR}\n`);
+    console.log(' All screenshot tests completed! ');
+    console.log(`\n Screenshots saved to: ${TEMP_DIR}\n`);
 
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
+    console.error(' Test failed:', error.message);
     if (error.stack) console.error(error.stack);
     process.exit(1);
   } finally {
-    console.log('🧹 Closing...');
-    await firefox.close();
-    console.log('✅ Done');
+    console.log(' Closing...');
+    await zen.close();
+    console.log(' Done');
   }
 }
 

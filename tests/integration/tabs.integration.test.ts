@@ -1,16 +1,16 @@
 /**
  * Integration tests for tab management
- * Tests with real Firefox browser in headless mode
+ * Tests with real Zen browser in headless mode
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
-  createTestFirefox,
-  closeFirefox,
+  createTestZen,
+  closeZen,
   waitForElementInSnapshot,
   waitForPageLoad,
-} from '../helpers/firefox.js';
-import type { FirefoxClient } from '@/firefox/index.js';
+} from '../helpers/zen.js';
+import type { FirefoxClient as ZenClient } from '@/firefox/index.js';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,22 +18,22 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const fixturesPath = resolve(__dirname, '../fixtures');
 
 describe('Tab Management Integration Tests', () => {
-  let firefox: FirefoxClient;
+  let zen: ZenClient;
 
   beforeAll(async () => {
-    firefox = await createTestFirefox();
+    zen = await createTestZen();
   }, 30000);
 
   afterAll(async () => {
-    await closeFirefox(firefox);
+    await closeZen(zen);
   });
 
   it('should list tabs', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
 
-    await firefox.refreshTabs();
-    const tabs = firefox.getTabs();
+    await zen.refreshTabs();
+    const tabs = zen.getTabs();
 
     expect(tabs).toBeDefined();
     expect(Array.isArray(tabs)).toBe(true);
@@ -41,15 +41,15 @@ describe('Tab Management Integration Tests', () => {
   }, 15000);
 
   it('should create new tab', async () => {
-    await firefox.refreshTabs();
-    const initialTabs = firefox.getTabs();
+    await zen.refreshTabs();
+    const initialTabs = zen.getTabs();
     const initialTabCount = initialTabs.length;
 
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    const newTabIndex = await firefox.createNewPage(fixturePath);
+    const newTabIndex = await zen.createNewPage(fixturePath);
 
-    await firefox.refreshTabs();
-    const updatedTabs = firefox.getTabs();
+    await zen.refreshTabs();
+    const updatedTabs = zen.getTabs();
 
     expect(updatedTabs.length).toBe(initialTabCount + 1);
     expect(typeof newTabIndex).toBe('number');
@@ -57,48 +57,48 @@ describe('Tab Management Integration Tests', () => {
   }, 15000);
 
   it('should switch between tabs', async () => {
-    await firefox.refreshTabs();
-    const initialTabs = firefox.getTabs();
+    await zen.refreshTabs();
+    const initialTabs = zen.getTabs();
 
     // Create second tab
     const fixturePath = `file://${fixturesPath}/form.html`;
-    const newTabIndex = await firefox.createNewPage(fixturePath);
+    const newTabIndex = await zen.createNewPage(fixturePath);
 
-    await firefox.refreshTabs();
+    await zen.refreshTabs();
 
     // Switch to new tab
-    await firefox.selectTab(newTabIndex);
+    await zen.selectTab(newTabIndex);
 
-    const selectedIdx = firefox.getSelectedTabIdx();
+    const selectedIdx = zen.getSelectedTabIdx();
     expect(selectedIdx).toBe(newTabIndex);
 
     // Switch back to first tab
-    await firefox.selectTab(0);
+    await zen.selectTab(0);
 
-    const newSelectedIdx = firefox.getSelectedTabIdx();
+    const newSelectedIdx = zen.getSelectedTabIdx();
     expect(newSelectedIdx).toBe(0);
   }, 20000);
 
   it('should close tab', async () => {
-    await firefox.refreshTabs();
-    const initialTabs = firefox.getTabs();
+    await zen.refreshTabs();
+    const initialTabs = zen.getTabs();
 
     if (initialTabs.length < 2) {
       // Create additional tab if needed
       const fixturePath = `file://${fixturesPath}/simple.html`;
-      await firefox.createNewPage(fixturePath);
-      await firefox.refreshTabs();
+      await zen.createNewPage(fixturePath);
+      await zen.refreshTabs();
     }
 
-    const tabsBeforeClose = firefox.getTabs();
+    const tabsBeforeClose = zen.getTabs();
     const tabCountBeforeClose = tabsBeforeClose.length;
 
     // Close the last tab (not the current one)
     const lastTabIndex = tabCountBeforeClose - 1;
-    await firefox.closeTab(lastTabIndex);
+    await zen.closeTab(lastTabIndex);
 
-    await firefox.refreshTabs();
-    const tabsAfterClose = firefox.getTabs();
+    await zen.refreshTabs();
+    const tabsAfterClose = zen.getTabs();
 
     expect(tabsAfterClose.length).toBe(tabCountBeforeClose - 1);
   }, 20000);
@@ -108,17 +108,17 @@ describe('Tab Management Integration Tests', () => {
     const simplePath = `file://${fixturesPath}/simple.html`;
     const formPath = `file://${fixturesPath}/form.html`;
 
-    await firefox.navigate(simplePath);
+    await zen.navigate(simplePath);
     await waitForPageLoad();
-    const tab1Index = firefox.getSelectedTabIdx();
+    const tab1Index = zen.getSelectedTabIdx();
 
-    const tab2Index = await firefox.createNewPage(formPath);
-    await firefox.selectTab(tab2Index);
+    const tab2Index = await zen.createNewPage(formPath);
+    await zen.selectTab(tab2Index);
     await waitForPageLoad();
 
     // Wait for form elements to appear in tab 2
     const emailElement = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#email') || entry.css.includes('email'),
       10000
     );
@@ -126,7 +126,7 @@ describe('Tab Management Integration Tests', () => {
     expect(emailElement).toBeDefined();
 
     // Take snapshot in tab 2 (form page)
-    const snapshot2 = await firefox.takeSnapshot();
+    const snapshot2 = await zen.takeSnapshot();
     const formElements = snapshot2.json.uidMap.filter(
       (entry) => entry.css.includes('#email') || entry.css.includes('email')
     );
@@ -134,12 +134,12 @@ describe('Tab Management Integration Tests', () => {
     expect(formElements.length).toBeGreaterThan(0);
 
     // Switch to tab 1 (simple page)
-    await firefox.selectTab(tab1Index);
+    await zen.selectTab(tab1Index);
     await waitForPageLoad();
 
     // Wait for button to appear in tab 1
     const clickBtnElement = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#clickBtn') || entry.css.includes('clickBtn'),
       10000
     );
@@ -147,7 +147,7 @@ describe('Tab Management Integration Tests', () => {
     expect(clickBtnElement).toBeDefined();
 
     // Take snapshot in tab 1
-    const snapshot1 = await firefox.takeSnapshot();
+    const snapshot1 = await zen.takeSnapshot();
     const simpleElements = snapshot1.json.uidMap.filter(
       (entry) => entry.css.includes('#clickBtn') || entry.css.includes('clickBtn')
     );
@@ -159,8 +159,8 @@ describe('Tab Management Integration Tests', () => {
   }, 30000);
 
   it('should get selected tab index', async () => {
-    await firefox.refreshTabs();
-    const selectedIdx = firefox.getSelectedTabIdx();
+    await zen.refreshTabs();
+    const selectedIdx = zen.getSelectedTabIdx();
 
     expect(typeof selectedIdx).toBe('number');
     expect(selectedIdx).toBeGreaterThanOrEqual(0);

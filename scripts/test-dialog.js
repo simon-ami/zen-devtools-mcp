@@ -4,99 +4,99 @@
  * Standalone test for dialog handling (Task 23)
  */
 
-import { FirefoxDevTools } from '../dist/index.js';
+import { ZenDevTools } from '../dist/index.js';
 
 async function main() {
-  console.log('💬 Testing Dialog Handling (Task 23)...\n');
+  console.log(' Testing Dialog Handling (Task 23)...\n');
 
-  const firefox = new FirefoxDevTools({
-    firefoxPath: process.env.FIREFOX_PATH,
+  const zen = new ZenDevTools({
+    zenPath: process.env.ZEN_PATH,
     headless: false,
     viewport: { width: 1024, height: 768 },
   });
 
   try {
     // Connect
-    console.log('📡 Connecting to Firefox...');
-    await firefox.connect();
-    console.log('✅ Connected!\n');
+    console.log(' Connecting to Zen...');
+    await zen.connect();
+    console.log(' Connected!\n');
 
     // Test 1: Alert dialog
-    console.log('1️⃣ Testing alert() dialog...');
-    await firefox.navigate('about:blank');
-    await firefox.evaluate('setTimeout(() => alert("This is a test alert!"), 100)');
+    console.log('1 Testing alert() dialog...');
+    await zen.navigate('about:blank');
+    await zen.evaluate('setTimeout(() => alert("This is a test alert!"), 100)');
     await new Promise((r) => setTimeout(r, 300));
-    await firefox.acceptDialog();
-    console.log('   ✅ Alert accepted\n');
+    await zen.acceptDialog();
+    console.log('    Alert accepted\n');
 
     // Test 2: Confirm dialog - accept
-    console.log('2️⃣ Testing confirm() dialog - accept...');
-    await firefox.evaluate(
+    console.log('2 Testing confirm() dialog - accept...');
+    await zen.evaluate(
       'setTimeout(() => { window.confirmResult = confirm("Click OK to accept"); }, 100)'
     );
     await new Promise((r) => setTimeout(r, 300));
-    await firefox.acceptDialog();
-    const confirmAccepted = await firefox.evaluate('return window.confirmResult');
+    await zen.acceptDialog();
+    const confirmAccepted = await zen.evaluate('return window.confirmResult');
     console.log(`   Result: ${confirmAccepted}`);
-    console.log(`   ${confirmAccepted ? '✅' : '❌'} Confirm was accepted\n`);
+    console.log(`   ${confirmAccepted ? '' : ''} Confirm was accepted\n`);
 
     // Test 3: Confirm dialog - dismiss
-    console.log('3️⃣ Testing confirm() dialog - dismiss...');
-    await firefox.evaluate(
+    console.log('3 Testing confirm() dialog - dismiss...');
+    await zen.evaluate(
       'setTimeout(() => { window.confirmResult2 = confirm("Click Cancel to dismiss"); }, 100)'
     );
     await new Promise((r) => setTimeout(r, 300));
-    await firefox.dismissDialog();
-    const confirmDismissed = await firefox.evaluate('return window.confirmResult2');
+    await zen.dismissDialog();
+    const confirmDismissed = await zen.evaluate('return window.confirmResult2');
     console.log(`   Result: ${confirmDismissed}`);
-    console.log(`   ${!confirmDismissed ? '✅' : '❌'} Confirm was dismissed\n`);
+    console.log(`   ${!confirmDismissed ? '' : ''} Confirm was dismissed\n`);
 
     // Test 4: Prompt dialog with text
-    console.log('4️⃣ Testing prompt() dialog with custom text...');
-    await firefox.evaluate(
+    console.log('4 Testing prompt() dialog with custom text...');
+    await zen.evaluate(
       'setTimeout(() => { window.promptResult = prompt("Enter your favorite color:"); }, 100)'
     );
     await new Promise((r) => setTimeout(r, 300));
-    await firefox.acceptDialog('Blue');
-    const promptResult = await firefox.evaluate('return window.promptResult');
+    await zen.acceptDialog('Blue');
+    const promptResult = await zen.evaluate('return window.promptResult');
     console.log(`   Result: ${promptResult}`);
-    console.log(`   ${promptResult === 'Blue' ? '✅' : '❌'} Prompt returned: "${promptResult}"\n`);
+    console.log(`   ${promptResult === 'Blue' ? '' : ''} Prompt returned: "${promptResult}"\n`);
 
     // Test 5: Prompt dialog dismissed
-    console.log('5️⃣ Testing prompt() dialog - dismiss...');
-    await firefox.evaluate(
+    console.log('5 Testing prompt() dialog - dismiss...');
+    await zen.evaluate(
       'setTimeout(() => { window.promptResult2 = prompt("This will be dismissed"); }, 100)'
     );
     await new Promise((r) => setTimeout(r, 300));
-    await firefox.dismissDialog();
-    const promptDismissed = await firefox.evaluate('return window.promptResult2');
+    await zen.dismissDialog();
+    const promptDismissed = await zen.evaluate('return window.promptResult2');
     console.log(`   Result: ${promptDismissed}`);
-    console.log(`   ${promptDismissed === null ? '✅' : '❌'} Prompt was dismissed (null)\n`);
+    console.log(`   ${promptDismissed === null ? '' : ''} Prompt was dismissed (null)\n`);
 
     // Test 6: Error handling - no dialog present
-    console.log('6️⃣ Testing error handling (no dialog present)...');
+    console.log('6 Testing error handling (no dialog present)...');
     try {
-      await firefox.acceptDialog();
-      console.log('   ❌ Should have thrown error');
+      await zen.acceptDialog();
+      console.log('    Should have thrown error');
     } catch (e) {
-      console.log(`   ✅ Error caught: ${e.message}\n`);
+      console.log(`    Error caught: ${e.message}\n`);
     }
 
-    console.log('✅ All dialog tests passed! 🎉\n');
+    console.log(' All dialog tests passed! \n');
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
+    console.error(' Test failed:', error.message);
     if (error.stack) {
       console.error(error.stack);
     }
     process.exit(1);
   } finally {
-    console.log('🧹 Closing Firefox...');
-    await firefox.close();
-    console.log('✅ Done!');
+    console.log(' Closing Zen...');
+    await zen.close();
+    console.log(' Done!');
   }
 }
 
 main().catch((error) => {
-  console.error('💥 Fatal error:', error);
+  console.error(' Fatal error:', error);
   process.exit(1);
 });

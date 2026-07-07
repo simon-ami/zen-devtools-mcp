@@ -112,7 +112,7 @@ tasks:
     desc: Create .env file from example
     cmds:
       - cp .env.example .env
-      - echo "Created .env file. Please edit it with your Firefox configuration."
+      - echo "Created .env file. Please edit it with your Zen configuration."
 
   test:
     desc: Run all unit tests

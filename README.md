@@ -1,248 +1,122 @@
-# Firefox DevTools MCP
+# Zen DevTools MCP
 
-[![npm version](https://badge.fury.io/js/@mozilla%2Ffirefox-devtools-mcp.svg)](https://www.npmjs.com/package/mozilla/firefox-devtools-mcp)
-[![CI](https://github.com/mozilla/firefox-devtools-mcp/workflows/CI/badge.svg)](https://github.com/mozilla/firefox-devtools-mcp/actions/workflows/ci.yml)
-[![codecov](https://codecov.io/gh/mozilla/firefox-devtools-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/mozilla/firefox-devtools-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE-MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE-APACHE)
+Model Context Protocol server for automating Zen Browser through Selenium WebDriver, geckodriver, and WebDriver BiDi.
 
-<a href="https://glama.ai/mcp/servers/@mozilla/firefox-devtools-mcp"><img src="https://glama.ai/mcp/servers/@mozilla/firefox-devtools-mcp/badge" height="223" alt="Glama"></a>
-
-Model Context Protocol server for automating Firefox via WebDriver BiDi (through Selenium WebDriver). Works with Claude Code, Claude Desktop, Cursor, Cline and other MCP clients.
-
-Repository: https://github.com/mozilla/firefox-devtools-mcp
-
-> **Note**: This MCP server requires a local Firefox browser installation and cannot run on cloud hosting services like glama.ai. Use `npx @mozilla/firefox-devtools-mcp@latest` to run locally, or use Docker with the provided Dockerfile.
+This is a Zen-first fork of Mozilla's Firefox DevTools MCP server. The public package, CLI, MCP server name, logs, profile paths, and management tools use Zen naming. The lower-level implementation still uses Selenium's Firefox/geckodriver APIs because Gecko automation is exposed through `moz:firefoxOptions`, `Browser.FIREFOX`, and `moz:*` WebDriver BiDi commands.
 
 ## Security
 
-Browser MCP servers carry inherent risks. A few key practices:
+Browser MCP servers can expose whatever the browser can access. By default this server launches Zen with an MCP-owned profile under `~/.zen-devtools-mcp`, not your real Zen profile.
 
-- **Use a dedicated Firefox profile.** Never run the server against your regular profile — the agent has access to whatever the browser can reach, including cookies and saved sessions.
-- **Be cautious about which sites you visit.** Pages can return content designed to manipulate the agent (prompt injection). Stick to sites you control or trust.
-- **Avoid enabling extra flags unless needed.** `--enable-script` and `--enable-privileged-context` significantly expand what the agent can do.
-
-See [SECURITY.md](SECURITY.md) for a full breakdown of risks and how to report vulnerabilities.
+Avoid running automation against your normal browsing profile. If you intentionally attach to an existing Zen window, start Zen yourself with Marionette and only keep that mode enabled while you need it.
 
 ## Requirements
 
-- Node.js ≥ 20.19.0
-- Firefox 100+ installed (auto‑detected, or pass `--firefox-path`)
+- Node.js 20.19 or newer
+- Zen Browser installed locally
+- geckodriver, managed automatically through the `geckodriver` npm package when needed
 
-## Install and use with Claude Code (npx)
-
-Recommended: use npx so you always run the latest published version from npm.
-
-Option A — Claude Code CLI
+On this macOS setup, the default Zen binary is:
 
 ```bash
-claude mcp add firefox-devtools npx @mozilla/firefox-devtools-mcp@latest
+/Applications/Zen.app/Contents/MacOS/zen
 ```
 
-Pass options either as args or env vars. Examples:
+## Local Use
 
 ```bash
-# Headless + viewport via args
-claude mcp add firefox-devtools npx @mozilla/firefox-devtools-mcp@latest -- --headless --viewport 1280x720
-
-# Or via environment variables
-claude mcp add firefox-devtools npx @mozilla/firefox-devtools-mcp@latest \
-  --env START_URL=https://example.com \
-  --env FIREFOX_HEADLESS=true
+npm ci
+npm run build
 ```
 
-Option B — Edit Claude Code settings JSON
+Add the local build to Claude Code:
 
-Add to your Claude Code config file:
-
-- macOS: `~/Library/Application Support/Claude/Code/mcp_settings.json`
-- Linux: `~/.config/claude/code/mcp_settings.json`
-- Windows: `%APPDATA%\Claude\Code\mcp_settings.json`
-
-```json
-{
-  "mcpServers": {
-    "firefox-devtools": {
-      "command": "npx",
-      "args": ["-y", "@mozilla/firefox-devtools-mcp@latest", "--headless", "--viewport", "1280x720"],
-      "env": {
-        "START_URL": "about:blank"
-      }
-    }
-  }
-}
+```bash
+claude mcp add zen-devtools node "$(pwd)/dist/index.js"
 ```
 
-Option C — Helper script (local dev build)
+Or pass options explicitly:
+
+```bash
+claude mcp add zen-devtools node "$(pwd)/dist/index.js" -- \
+  --zen-path /Applications/Zen.app/Contents/MacOS/zen \
+  --headless \
+  --viewport 1280x720
+```
+
+You can also run the setup helper:
 
 ```bash
 npm run setup
-# Choose Claude Code; the script saves JSON to the right path
 ```
 
-## Try it with MCP Inspector
+## Inspector
 
 ```bash
-npx @modelcontextprotocol/inspector npx @mozilla/firefox-devtools-mcp@latest --start-url https://example.com --headless
-```
-
-Then call tools like:
-
-- `list_pages`, `select_page`, `navigate_page`
-- `take_snapshot` then `click_by_uid` / `fill_by_uid`
-- `list_network_requests` (always‑on capture), `get_network_request`
-- `screenshot_page`, `list_console_messages`
-
-## CLI options
-
-You can pass flags or environment variables (names on the right):
-
-- `--firefox-path` — absolute path to Firefox binary
-- `--headless` — run without UI (`FIREFOX_HEADLESS=true`)
-- `--viewport 1280x720` — initial window size
-- `--profile-path` — use a specific Firefox profile
-- `--firefox-arg` — extra Firefox arguments (repeatable)
-- `--start-url` — open this URL on start (`START_URL`)
-- `--accept-insecure-certs` — ignore TLS errors (`ACCEPT_INSECURE_CERTS=true`)
-- `--connect-existing` — attach to an already-running Firefox instead of launching a new one (`CONNECT_EXISTING=true`)
-- `--marionette-port` — Marionette port for connect-existing mode, default 2828 (`MARIONETTE_PORT`)
-- `--pref name=value` — set Firefox preference at startup via `moz:firefoxOptions` (repeatable)
-- `--enable-script` — enable the `evaluate_script` tool (executes arbitrary JavaScript in the page context) and debugging tools (list scripts, inspect source, set logpoints). Debugging tools require Firefox 153+. (`ENABLE_SCRIPT=true`)
-- `--enable-privileged-context` — enable privileged context tools: list/select privileged contexts, evaluate privileged scripts, get/set Firefox prefs, and list extensions. Requires `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1` (`ENABLE_PRIVILEGED_CONTEXT=true`)
-- `--android-device` — enable Firefox for Android mode; value is the ADB device serial (e.g. `emulator-5554`). Run `adb devices` to list connected devices. Omit the value or use `auto` to select the single connected device automatically.
-- `--android-package` — Android app package name, default `org.mozilla.firefox`. Other packages: `org.mozilla.firefox_beta` for Firefox Beta, `org.mozilla.fenix` for Firefox Nightly, `org.mozilla.fenix.debug` for Firefox Nightly Debug, `org.mozilla.geckoview_example` for geckoview (`ANDROID_PACKAGE`)
-- `--log-file` — write MCP server logs to a file instead of stderr. Useful for debugging sessions with MCP clients that hide server output. Set `DEBUG=*` to also include verbose debug logs. Example: `--log-file /tmp/firefox-mcp.log`
-
-
-### Useful preferences (`--pref`)
-
-- remote.prefs.recommended=false. When Firefox runs in automation, it applies [RecommendedPreferences](https://searchfox.org/firefox-main/source/remote/shared/RecommendedPreferences.sys.mjs) that modify browser behavior for testing. Set remote.prefs.recommended to false to skip those and have a configuration closer to a regular Firefox instance.
-- remote.log.level=Trace. Enable verbose WebDriver protocol logs in Firefox. The MCP server will automatically pass the matching log level to geckodriver so both sides log at the same verbosity.
-- app.update.disabledForTesting=false. Allow Firefox to automatically download and apply updates. Note that updates may interrupt your session. Requires also setting remote.prefs.recommended=false.
-
-### Firefox for Android
-
-Use `--android-device` to automate Firefox running on an Android device. Requires `adb` on your PATH and geckodriver, which is managed automatically.
-
-```bash
-# List connected devices
-adb devices
-
-# Launch Firefox for Android on the single connected device
-npx @mozilla/firefox-devtools-mcp --android-device auto
-
-# Target a specific device
-npx @mozilla/firefox-devtools-mcp --android-device <serial>
-
-# Use Firefox Nightly instead
-npx @mozilla/firefox-devtools-mcp --android-device <serial> --android-package org.mozilla.fenix
-```
-
-Port forwarding between the host and device is handled automatically by geckodriver.
-
-### Connect to existing Firefox
-
-Use `--connect-existing` to automate your real browsing session — with cookies, logins, and open tabs intact:
-
-```bash
-# Start Firefox with Marionette enabled
-firefox --marionette
-
-# Run the MCP server
-npx @mozilla/firefox-devtools-mcp --connect-existing --marionette-port 2828
-```
-
-Or set `marionette.enabled` to `true` in `about:config` (or `user.js`) to enable Marionette on every launch.
-
-BiDi-dependent features (console events, network events) are not available in connect-existing mode; all other features work normally.
-
-> **Warning:** Do not leave Marionette enabled during normal browsing. It sets
-> `navigator.webdriver = true` and changes other browser fingerprint signals,
-> which can trigger bot detection on sites protected by Cloudflare, Akamai, etc.
-> Only enable Marionette when you need MCP automation, then restart Firefox
-> normally afterward.
-
-## Tool overview
-
-- Pages: list/new/navigate/select/close
-- Snapshot/UID: take/resolve/clear
-- Input: click/hover/fill/drag/upload/form fill
-- Network: list/get (ID‑first, filters, always‑on capture)
-- Console: list/clear
-- Screenshot: page/by uid (with optional `saveTo` for CLI environments)
-- Script: evaluate_script
-- Privileged Context: list/select privileged ("chrome") contexts, evaluate_privileged_script (requires `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`)
-- WebExtension: install_extension, uninstall_extension, list_extensions (list requires `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`)
-- Firefox Management: get_firefox_info, get_firefox_output, restart_firefox, set_firefox_prefs, get_firefox_prefs
-- Profiler: profiler_is_active, profiler_start (preset or explicit config), profiler_stop (saves profile to downloads directory)
-- Utilities: accept/dismiss dialog, history back/forward, set viewport
-
-### Screenshot optimization for Claude Code
-
-When using screenshots in Claude Code CLI, the base64 image data can consume significant context.
-Use the `saveTo` parameter to save screenshots to disk instead:
-
-```
-screenshot_page({ saveTo: "/tmp/page.png" })
-screenshot_by_uid({ uid: "abc123", saveTo: "/tmp/element.png" })
-```
-
-The file can then be viewed with Claude Code's `Read` tool without impacting context size.
-
-## Local development
-
-```bash
-npm install
 npm run build
-
-# Run with Inspector against local build
-npx @modelcontextprotocol/inspector node dist/index.js --headless --viewport 1280x720
-
-# Or run in dev with hot reload
-npm run inspector:dev
+npx @modelcontextprotocol/inspector node dist/index.js --headless --start-url https://example.com
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more details on local development, testing, and CI.
+## CLI Options
 
-## Troubleshooting
+- `--zen-path` — absolute path to the Zen executable (`ZEN_PATH`)
+- `--headless` — run without UI (`ZEN_HEADLESS=true`)
+- `--viewport 1280x720` — initial window size
+- `--profile-path` — parent directory for a dedicated MCP profile
+- `--auto-profile` — use a persistent profile under `~/.zen-devtools-mcp`; enabled by default (`AUTO_PROFILE=false` disables it)
+- `--zen-arg` — extra Zen arguments, repeatable
+- `--start-url` — page opened on startup (`START_URL`)
+- `--accept-insecure-certs` — ignore TLS errors (`ACCEPT_INSECURE_CERTS=true`)
+- `--connect-existing` — attach to a running Zen instance via Marionette (`CONNECT_EXISTING=true`)
+- `--marionette-port` — Marionette port for connect-existing mode, default `2828` (`MARIONETTE_PORT`)
+- `--pref name=value` — set Zen preference at startup through `moz:firefoxOptions`, repeatable
+- `--enable-script` — enable script/debugging tools; debugging commands require Gecko 153+
+- `--enable-privileged-context` — enable privileged tools in the privileged build; requires `MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1`
+- `--log-file` — write MCP server logs to a file
 
-- Firefox not found: pass `--firefox-path "/Applications/Firefox.app/Contents/MacOS/firefox"` (macOS) or the correct path on your OS.
-- First run is slow: Selenium sets up the BiDi session; subsequent runs are faster.
-- Stale UIDs after navigation: take a fresh snapshot (`take_snapshot`) before using UID tools.
-- Windows 10: Error during discovery for MCP server 'firefox-devtools': MCP error -32000: Connection closed
-  - **Solution 1** Wrap with `cmd /c` ([details](https://github.com/modelcontextprotocol/servers/issues/1082#issuecomment-2791786310)):
+## MCP Tools
 
-    ```json
-    "mcpServers": {
-      "firefox-devtools": {
-        "command": "cmd",
-        "args": ["/c", "npx", "-y", "@mozilla/firefox-devtools-mcp@latest"]
-      }
-    }
-    ```
+Generic browser tools keep their existing names:
 
-  - **Solution 2** Use the absolute path to `npx` (adjust extension — `.cmd`, `.bat`, `.exe`, or `.ps1` — to match your setup):
+- Pages: `list_pages`, `new_page`, `navigate_page`, `select_page`, `close_page`
+- Snapshot and UID: `take_snapshot`, `resolve_uid_to_selector`, `clear_snapshot`
+- Input: `click_by_uid`, `hover_by_uid`, `fill_by_uid`, `drag_by_uid_to_uid`, `fill_form_by_uid`, `upload_file_by_uid`
+- Network and console: `list_network_requests`, `get_network_request`, `list_console_messages`, `clear_console_messages`
+- Screenshot and utilities: `screenshot_page`, `screenshot_by_uid`, `accept_dialog`, `dismiss_dialog`, `navigate_history`, `set_viewport_size`
 
-    ```json
-    "mcpServers": {
-      "firefox-devtools": {
-        "command": "C:\\nvm4w\\nodejs\\npx.ps1",
-        "args": ["-y", "@mozilla/firefox-devtools-mcp@latest"]
-      }
-    }
-    ```
+Zen-specific management tools:
 
-## Versioning
+- `get_zen_info`
+- `get_zen_output`
+- `restart_zen`
+- `set_zen_prefs`
+- `get_zen_prefs`
 
-- Pre‑1.0 API: versions start at `0.x`. Use `@latest` with npx for the newest release.
+## Existing Zen Session
 
-## Contributing
+Connect-existing mode attaches to Zen through Marionette:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for how to file issues, run tests, and work on the project locally.
+```bash
+/Applications/Zen.app/Contents/MacOS/zen --marionette
+node dist/index.js --connect-existing --marionette-port 2828
+```
 
-## Author
+Do not leave Marionette enabled for normal browsing. It changes browser automation signals such as `navigator.webdriver`.
 
-Maintained by [Mozilla](https://www.mozilla.org).
+## Version Notes
 
-## License
+The installed local Zen checked during this port was `1.21.5b` on Gecko `152.0.4`. The server reports both values in `get_zen_info`.
 
-Licensed under either of [MIT](LICENSE-MIT) or [Apache 2.0](LICENSE-APACHE) at your option.
+Optional tools using `moz:debugging` require Gecko 153+. The profiler tools require Gecko 154+. On Gecko 152.0.4 those tools return explicit unsupported-version errors while the standard page, input, console, network, and screenshot tools remain available.
+
+## Development
+
+```bash
+npm run typecheck
+npm run lint
+npm run format:check
+npm run test:unit
+npm run build
+```
+
+The CI workflow runs unit tests only. Run local smoke tests against an installed Zen binary for browser-level verification.

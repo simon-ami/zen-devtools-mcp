@@ -54,7 +54,7 @@ function cleanup() {
       stdio: 'ignore',
     });
 
-    console.log('✅ Global cleanup: All test Firefox processes terminated');
+    console.log(' Global cleanup: All test Firefox processes terminated');
   } catch (error) {
     // Ignore errors - processes might already be dead
   } finally {
@@ -64,26 +64,26 @@ function cleanup() {
 
 // Handle process termination signals
 process.on('SIGINT', () => {
-  console.log('\n🛑 SIGINT received, cleaning up Firefox processes...');
+  console.log('\n SIGINT received, cleaning up Firefox processes...');
   cleanup();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\n🛑 SIGTERM received, cleaning up Firefox processes...');
+  console.log('\n SIGTERM received, cleaning up Firefox processes...');
   cleanup();
   process.exit(0);
 });
 
 // Handle unhandled errors
 process.on('uncaughtException', (error) => {
-  console.error('❌ Uncaught exception:', error);
+  console.error(' Uncaught exception:', error);
   cleanup();
   process.exit(1);
 });
 
 process.on('unhandledRejection', (reason) => {
-  console.error('❌ Unhandled rejection:', reason);
+  console.error(' Unhandled rejection:', reason);
   cleanup();
   process.exit(1);
 });

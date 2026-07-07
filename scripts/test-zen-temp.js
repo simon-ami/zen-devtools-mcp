@@ -1,7 +1,7 @@
-import { FirefoxDevTools } from '../dist/index.js';
+import { ZenDevTools } from '../dist/index.js';
 
 async function main() {
-  const firefox = new FirefoxDevTools({
+  const zen = new ZenDevTools({
     headless: true,
     enableBidiLogging: false,
     width: 1280,
@@ -9,9 +9,9 @@ async function main() {
   });
 
   console.log('Connecting...');
-  await firefox.connect();
+  await zen.connect();
   console.log('Connected!');
-  await firefox.close();
+  await zen.close();
   console.log('Done!');
 }
 

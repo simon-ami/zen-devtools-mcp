@@ -433,12 +433,12 @@ describe('Snapshot Formatter - Advanced Cases', () => {
         uid: 'uid-1',
         role: 'button',
         tag: 'button',
-        name: '🚀 Launch',
+        name: ' Launch',
         children: [],
       };
 
       const result = formatSnapshotTree(node);
-      expect(result).toContain('🚀 Launch');
+      expect(result).toContain(' Launch');
     });
   });
 });

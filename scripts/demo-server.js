@@ -91,12 +91,12 @@ const HTML_PAGE = `
 </head>
 <body>
   <div class="container">
-    <h1>🦊 Firefox DevTools MCP</h1>
+    <h1> Zen DevTools MCP</h1>
     <p><strong>Demo Page for Testing MCP Tools</strong></p>
     <p>Use this page with the MCP Inspector to test various tools!</p>
 
     <div class="section">
-      <h2>📝 Console Logs</h2>
+      <h2> Console Logs</h2>
       <button onclick="generateLogs()">Generate All Log Types</button>
       <button onclick="generateManyLogs()">Generate 50 Logs</button>
       <button onclick="logObject()">Log Object</button>
@@ -105,34 +105,34 @@ const HTML_PAGE = `
     </div>
 
     <div class="section">
-      <h2>💬 Dialogs</h2>
+      <h2> Dialogs</h2>
       <button onclick="testAlert()">Show Alert</button>
       <button onclick="testConfirm()">Show Confirm</button>
       <button onclick="testPrompt()">Show Prompt</button>
     </div>
 
     <div class="section">
-      <h2>⌨️ Input Elements</h2>
+      <h2>⌨ Input Elements</h2>
       <input type="text" id="testInput" placeholder="Type something here...">
       <button onclick="showInputValue()">Show Input Value</button>
       <button onclick="clearInput()">Clear Input</button>
     </div>
 
     <div class="section">
-      <h2>🔄 Page Actions</h2>
+      <h2> Page Actions</h2>
       <button onclick="location.reload()">Reload Page</button>
       <button onclick="window.open('about:blank', '_blank')">Open New Tab</button>
       <button onclick="navigateToExample()">Navigate to Example.com</button>
     </div>
 
     <div class="section">
-      <h2>🎯 Clickable Elements</h2>
+      <h2> Clickable Elements</h2>
       <button id="clickCounter" onclick="incrementCounter()">Click Counter: 0</button>
       <button onclick="changeBackground()">Change Background</button>
     </div>
 
     <div class="section">
-      <h2>📊 Live Console Output</h2>
+      <h2> Live Console Output</h2>
       <div class="console-output" id="consoleOutput">
         Console logs will appear here...
       </div>
@@ -204,7 +204,7 @@ const HTML_PAGE = `
 
     function logObject() {
       console.log('Object:', {
-        name: 'Firefox DevTools MCP',
+        name: 'Zen DevTools MCP',
         version: '0.1.0',
         features: ['console', 'dialog', 'input', 'screenshot'],
         config: { headless: false, timeout: 5000 }
@@ -217,17 +217,17 @@ const HTML_PAGE = `
 
     // Dialog functions
     function testAlert() {
-      alert('This is an alert dialog! 🚨');
+      alert('This is an alert dialog! ');
       console.info('Alert dialog was shown');
     }
 
     function testConfirm() {
-      const result = confirm('Do you want to continue? 🤔');
+      const result = confirm('Do you want to continue? ');
       console.log('Confirm result:', result);
     }
 
     function testPrompt() {
-      const result = prompt('What is your favorite color? 🎨');
+      const result = prompt('What is your favorite color? ');
       console.log('Prompt result:', result);
     }
 
@@ -263,7 +263,7 @@ const HTML_PAGE = `
     }
 
     // Initial log
-    console.log('🦊 Firefox DevTools MCP Demo Page Loaded!');
+    console.log(' Zen DevTools MCP Demo Page Loaded!');
     console.info('Server running on http://localhost:3456');
     console.info('Use MCP Inspector to test tools: list_console_messages, list_pages, etc.');
   </script>
@@ -286,16 +286,16 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log('');
-  console.log('🦊 Firefox DevTools MCP - Demo Server');
+  console.log(' Zen DevTools MCP - Demo Server');
   console.log('=====================================');
   console.log('');
-  console.log(`🌐 Server running at: http://localhost:${PORT}`);
+  console.log(` Server running at: http://localhost:${PORT}`);
   console.log('');
-  console.log('📋 Available endpoints:');
+  console.log(' Available endpoints:');
   console.log(`   http://localhost:${PORT}/        - Demo page`);
   console.log(`   http://localhost:${PORT}/health  - Health check`);
   console.log('');
-  console.log('💡 Usage with MCP Inspector:');
+  console.log(' Usage with MCP Inspector:');
   console.log('   1. Start this server (already running)');
   console.log(`   2. Open MCP Inspector: npm run inspector`);
   console.log(`   3. Use tool: new_page with url "http://localhost:${PORT}"`);
@@ -307,19 +307,19 @@ server.listen(PORT, () => {
 
 server.on('error', (error) => {
   if (error.code === 'EADDRINUSE') {
-    console.error(`❌ Port ${PORT} is already in use!\n`);
+    console.error(` Port ${PORT} is already in use!\n`);
     console.error('   Try stopping other servers or change the PORT in demo-server.js\n');
   } else {
-    console.error('❌ Server error:', error.message);
+    console.error(' Server error:', error.message);
   }
   process.exit(1);
 });
 
 // Graceful shutdown
 process.on('SIGINT', () => {
-  console.log('\n\n🛑 Shutting down demo server...');
+  console.log('\n\n Shutting down demo server...');
   server.close(() => {
-    console.log('✅ Server closed');
+    console.log(' Server closed');
     process.exit(0);
   });
 });

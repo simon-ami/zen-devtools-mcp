@@ -4,32 +4,32 @@
  * Test script for UID-based input tools (Task 21)
  * Tests: clickByUid, fillByUid, hoverByUid, dragByUidToUid, fillFormByUid, uploadFileByUid
  *
- * Note: Uses innerHTML injection to avoid Firefox data: URL parsing issues
+ * Note: Uses innerHTML injection to avoid Zen data: URL parsing issues
  */
 
-import { FirefoxDevTools } from '../dist/index.js';
+import { ZenDevTools } from '../dist/index.js';
 import { writeFile, mkdtemp, rm } from 'node:fs/promises';
 import { join } from 'node:path';
 import { tmpdir } from 'node:os';
 import { loadHTML, waitShort } from './_helpers/page-loader.js';
 
 async function main() {
-  console.log('🧪 Testing UID-based input tools...\n');
+  console.log(' Testing UID-based input tools...\n');
 
-  const firefox = new FirefoxDevTools({
-    firefoxPath: process.env.FIREFOX_PATH,
+  const zen = new ZenDevTools({
+    zenPath: process.env.ZEN_PATH,
     headless: false,
     startUrl: 'about:blank',
   });
 
   try {
-    console.log('📡 Connecting to Firefox...');
-    await firefox.connect();
-    console.log('✅ Connected!\n');
+    console.log(' Connecting to Zen...');
+    await zen.connect();
+    console.log(' Connected!\n');
 
     // Test 1: Click
-    console.log('🖱️  Test 1: Click By UID');
-    await loadHTML(firefox, `
+    console.log('  Test 1: Click By UID');
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <button id="btn">Click Me</button>
@@ -40,20 +40,20 @@ async function main() {
         </script>
       </body>
     `);
-    let snapshot = await firefox.takeSnapshot();
+    let snapshot = await zen.takeSnapshot();
     const btnUid = snapshot.json.root.children.find(n => n.tag === 'button')?.uid;
     if (btnUid) {
-      await firefox.clickByUid(btnUid);
+      await zen.clickByUid(btnUid);
       await waitShort();
-      const result = await firefox.evaluate("return document.body.getAttribute('data-result')");
-      console.log(`   ${result === 'clicked' ? '✅' : '❌'} Click: ${result}\n`);
+      const result = await zen.evaluate("return document.body.getAttribute('data-result')");
+      console.log(`   ${result === 'clicked' ? '' : ''} Click: ${result}\n`);
     } else {
-      console.log('   ❌ Button UID not found\n');
+      console.log('    Button UID not found\n');
     }
 
     // Test 2: Fill
-    console.log('✍️  Test 2: Fill By UID');
-    await loadHTML(firefox, `
+    console.log('  Test 2: Fill By UID');
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <input id="inp" type="text">
@@ -64,20 +64,20 @@ async function main() {
         </script>
       </body>
     `);
-    snapshot = await firefox.takeSnapshot();
+    snapshot = await zen.takeSnapshot();
     const inpUid = snapshot.json.root.children.find(n => n.tag === 'input')?.uid;
     if (inpUid) {
-      await firefox.fillByUid(inpUid, 'Hello Test');
+      await zen.fillByUid(inpUid, 'Hello Test');
       await waitShort();
-      const value = await firefox.evaluate("return document.body.getAttribute('data-value')");
-      console.log(`   ${value === 'Hello Test' ? '✅' : '❌'} Fill: ${value}\n`);
+      const value = await zen.evaluate("return document.body.getAttribute('data-value')");
+      console.log(`   ${value === 'Hello Test' ? '' : ''} Fill: ${value}\n`);
     } else {
-      console.log('   ❌ Input UID not found\n');
+      console.log('    Input UID not found\n');
     }
 
     // Test 3: Hover
-    console.log('🎯 Test 3: Hover By UID');
-    await loadHTML(firefox, `
+    console.log(' Test 3: Hover By UID');
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <div id="hover">Hover Me</div>
@@ -88,20 +88,20 @@ async function main() {
         </script>
       </body>
     `);
-    snapshot = await firefox.takeSnapshot();
+    snapshot = await zen.takeSnapshot();
     const hoverUid = snapshot.json.root.children.find(n => n.tag === 'div')?.uid;
     if (hoverUid) {
-      await firefox.hoverByUid(hoverUid);
+      await zen.hoverByUid(hoverUid);
       await waitShort();
-      const hovered = await firefox.evaluate("return document.body.getAttribute('data-hovered')");
-      console.log(`   ${hovered === '1' ? '✅' : '❌'} Hover: ${hovered}\n`);
+      const hovered = await zen.evaluate("return document.body.getAttribute('data-hovered')");
+      console.log(`   ${hovered === '1' ? '' : ''} Hover: ${hovered}\n`);
     } else {
-      console.log('   ❌ Div UID not found\n');
+      console.log('    Div UID not found\n');
     }
 
     // Test 4: Fill Form
-    console.log('📝 Test 4: Fill Form By UID');
-    await loadHTML(firefox, `
+    console.log(' Test 4: Fill Form By UID');
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <input id="first" type="text" name="firstName">
@@ -119,29 +119,29 @@ async function main() {
         </script>
       </body>
     `);
-    snapshot = await firefox.takeSnapshot();
+    snapshot = await zen.takeSnapshot();
     const inputs = snapshot.json.root.children.filter(n => n.tag === 'input');
     if (inputs.length === 2) {
-      await firefox.fillFormByUid([
+      await zen.fillFormByUid([
         { uid: inputs[0].uid, value: 'John' },
         { uid: inputs[1].uid, value: 'Doe' },
       ]);
       await waitShort(500);
-      const formData = await firefox.evaluate("return document.body.getAttribute('data-form')");
+      const formData = await zen.evaluate("return document.body.getAttribute('data-form')");
       const parsed = JSON.parse(formData || '{}');
       const ok = parsed.first === 'John' && parsed.last === 'Doe';
-      console.log(`   ${ok ? '✅' : '❌'} Fill Form: ${formData}\n`);
+      console.log(`   ${ok ? '' : ''} Fill Form: ${formData}\n`);
     } else {
-      console.log(`   ❌ Expected 2 inputs, found ${inputs.length}\n`);
+      console.log(`    Expected 2 inputs, found ${inputs.length}\n`);
     }
 
     // Test 5: Upload File
-    console.log('📁 Test 5: Upload File By UID');
+    console.log(' Test 5: Upload File By UID');
     const tmpDir = await mkdtemp(join(tmpdir(), 'test-'));
     const filePath = join(tmpDir, 'test.txt');
     await writeFile(filePath, 'test content');
 
-    await loadHTML(firefox, `
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <input id="file" type="file" style="display:none">
@@ -154,21 +154,21 @@ async function main() {
         </script>
       </body>
     `);
-    snapshot = await firefox.takeSnapshot();
+    snapshot = await zen.takeSnapshot();
     const fileUid = snapshot.json.root.children.find(n => n.tag === 'input')?.uid;
     if (fileUid) {
-      await firefox.uploadFileByUid(fileUid, filePath);
+      await zen.uploadFileByUid(fileUid, filePath);
       await waitShort();
-      const filename = await firefox.evaluate("return document.body.getAttribute('data-filename')");
-      console.log(`   ${filename === 'test.txt' ? '✅' : '❌'} Upload: ${filename}\n`);
+      const filename = await zen.evaluate("return document.body.getAttribute('data-filename')");
+      console.log(`   ${filename === 'test.txt' ? '' : ''} Upload: ${filename}\n`);
     } else {
-      console.log('   ❌ File input UID not found\n');
+      console.log('    File input UID not found\n');
     }
     await rm(tmpDir, { recursive: true, force: true });
 
     // Test 6: Drag & Drop
-    console.log('🧲 Test 6: Drag & Drop By UID');
-    await loadHTML(firefox, `
+    console.log(' Test 6: Drag & Drop By UID');
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <div id="drag" draggable="true">Drag</div>
@@ -183,20 +183,20 @@ async function main() {
         </script>
       </body>
     `);
-    snapshot = await firefox.takeSnapshot();
+    snapshot = await zen.takeSnapshot();
     const divs = snapshot.json.root.children.filter(n => n.tag === 'div');
     if (divs.length === 2) {
-      await firefox.dragByUidToUid(divs[0].uid, divs[1].uid);
+      await zen.dragByUidToUid(divs[0].uid, divs[1].uid);
       await waitShort();
-      const dropped = await firefox.evaluate("return document.body.getAttribute('data-dropped')");
-      console.log(`   ${dropped === '1' ? '✅' : '❌'} Drag & Drop: ${dropped}\n`);
+      const dropped = await zen.evaluate("return document.body.getAttribute('data-dropped')");
+      console.log(`   ${dropped === '1' ? '' : ''} Drag & Drop: ${dropped}\n`);
     } else {
-      console.log(`   ❌ Expected 2 divs, found ${divs.length}\n`);
+      console.log(`    Expected 2 divs, found ${divs.length}\n`);
     }
 
     // Test 7: Double Click
-    console.log('🖱️🖱️  Test 7: Double Click By UID');
-    await loadHTML(firefox, `
+    console.log('  Test 7: Double Click By UID');
+    await loadHTML(zen, `
       <head><title>Test</title></head>
       <body>
         <button id="dblBtn">Double Click</button>
@@ -207,26 +207,26 @@ async function main() {
         </script>
       </body>
     `);
-    snapshot = await firefox.takeSnapshot();
+    snapshot = await zen.takeSnapshot();
     const dblBtnUid = snapshot.json.root.children.find(n => n.tag === 'button')?.uid;
     if (dblBtnUid) {
-      await firefox.clickByUid(dblBtnUid, true);
+      await zen.clickByUid(dblBtnUid, true);
       await waitShort();
-      const dblClicked = await firefox.evaluate("return document.body.getAttribute('data-dblclick')");
-      console.log(`   ${dblClicked === '1' ? '✅' : '❌'} Double Click: ${dblClicked}\n`);
+      const dblClicked = await zen.evaluate("return document.body.getAttribute('data-dblclick')");
+      console.log(`   ${dblClicked === '1' ? '' : ''} Double Click: ${dblClicked}\n`);
     } else {
-      console.log('   ❌ Button UID not found\n');
+      console.log('    Button UID not found\n');
     }
 
-    console.log('✅ All tests completed! 🎉\n');
+    console.log(' All tests completed! \n');
   } catch (error) {
-    console.error('❌ Test failed:', error.message);
+    console.error(' Test failed:', error.message);
     if (error.stack) console.error(error.stack);
     process.exit(1);
   } finally {
-    console.log('🧹 Closing...');
-    await firefox.close();
-    console.log('✅ Done');
+    console.log(' Closing...');
+    await zen.close();
+    console.log(' Done');
   }
 }
 

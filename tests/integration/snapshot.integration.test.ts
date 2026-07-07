@@ -1,16 +1,16 @@
 /**
  * Integration tests for snapshot workflow
- * Tests with real Firefox browser in headless mode
+ * Tests with real Zen browser in headless mode
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
-  createTestFirefox,
-  closeFirefox,
+  createTestZen,
+  closeZen,
   waitForElementInSnapshot,
   waitForPageLoad,
-} from '../helpers/firefox.js';
-import type { FirefoxClient } from '@/firefox/index.js';
+} from '../helpers/zen.js';
+import type { FirefoxClient as ZenClient } from '@/firefox/index.js';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -18,22 +18,22 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const fixturesPath = resolve(__dirname, '../fixtures');
 
 describe('Snapshot Integration Tests', () => {
-  let firefox: FirefoxClient;
+  let zen: ZenClient;
 
   beforeAll(async () => {
-    firefox = await createTestFirefox();
+    zen = await createTestZen();
   }, 60000); // 60 second timeout for browser startup (CI runners can be slow)
 
   afterAll(async () => {
-    await closeFirefox(firefox);
+    await closeZen(zen);
   });
 
   it('should take snapshot and generate UIDs', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot = await firefox.takeSnapshot();
+    const snapshot = await zen.takeSnapshot();
 
     expect(snapshot).toBeDefined();
     expect(snapshot.json).toBeDefined();
@@ -46,31 +46,31 @@ describe('Snapshot Integration Tests', () => {
 
   it('should resolve UID to selector', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Wait for button to appear in snapshot
     const buttonUid = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#clickBtn') || entry.css.includes('id="clickBtn"'),
       10000
     );
 
     expect(buttonUid).toBeDefined();
 
-    const selector = firefox.resolveUidToSelector(buttonUid.uid);
+    const selector = zen.resolveUidToSelector(buttonUid.uid);
     expect(selector).toBeDefined();
     expect(typeof selector).toBe('string');
   }, 10000);
 
   it('should click element by UID', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Wait for button to appear in snapshot
     const buttonUid = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#clickBtn') || entry.css.includes('id="clickBtn"'),
       10000
     );
@@ -78,42 +78,42 @@ describe('Snapshot Integration Tests', () => {
     expect(buttonUid).toBeDefined();
 
     // Click button - should not throw
-    await expect(firefox.clickByUid(buttonUid.uid)).resolves.not.toThrow();
+    await expect(zen.clickByUid(buttonUid.uid)).resolves.not.toThrow();
   }, 10000);
 
   it('should detect stale UIDs after navigation', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot1 = await firefox.takeSnapshot();
+    const snapshot1 = await zen.takeSnapshot();
     const firstUid = snapshot1.json.uidMap[0]?.uid;
 
     expect(firstUid).toBeDefined();
 
     // Navigate to different page
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Old UID should be stale or not found
     if (firstUid) {
-      await expect(firefox.clickByUid(firstUid)).rejects.toThrow(/(stale snapshot|UID not found)/);
+      await expect(zen.clickByUid(firstUid)).rejects.toThrow(/(stale snapshot|UID not found)/);
     }
   }, 10000);
 
   it('should clear snapshot cache on navigation', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot1 = await firefox.takeSnapshot();
+    const snapshot1 = await zen.takeSnapshot();
     const snapshotId1 = snapshot1.json.snapshotId;
 
     // Navigate to same page
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot2 = await firefox.takeSnapshot();
+    const snapshot2 = await zen.takeSnapshot();
     const snapshotId2 = snapshot2.json.snapshotId;
 
     // Snapshot IDs should be different
@@ -122,12 +122,12 @@ describe('Snapshot Integration Tests', () => {
 
   it('should handle double-click by UID', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Wait for double-click button to appear in snapshot
     const dblClickBtnUid = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#dblClickBtn') || entry.css.includes('id="dblClickBtn"'),
       10000
     );
@@ -135,49 +135,49 @@ describe('Snapshot Integration Tests', () => {
     expect(dblClickBtnUid).toBeDefined();
 
     // Double-click button - should not throw
-    await expect(firefox.clickByUid(dblClickBtnUid.uid, true)).resolves.not.toThrow();
+    await expect(zen.clickByUid(dblClickBtnUid.uid, true)).resolves.not.toThrow();
   }, 10000);
 
   it('should clear snapshot manually', async () => {
     const fixturePath = `file://${fixturesPath}/simple.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot = await firefox.takeSnapshot();
+    const snapshot = await zen.takeSnapshot();
     const firstUid = snapshot.json.uidMap[0]?.uid;
 
     expect(firstUid).toBeDefined();
 
     // Clear snapshot manually
-    firefox.clearSnapshot();
+    zen.clearSnapshot();
 
     // UID should be stale after manual clear
     if (firstUid) {
-      await expect(firefox.clickByUid(firstUid)).rejects.toThrow();
+      await expect(zen.clickByUid(firstUid)).rejects.toThrow();
     }
   }, 10000);
 
   it('should return clear error for invalid CSS selector', async () => {
     const fixturePath = `file://${fixturesPath}/selector.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Test with a selector that genuinely causes querySelector to throw
     // Using :has() with unclosed parenthesis should trigger an exception
     const invalidSelector = '#test:has(';
 
-    await expect(firefox.takeSnapshot({ selector: invalidSelector })).rejects.toThrow(
+    await expect(zen.takeSnapshot({ selector: invalidSelector })).rejects.toThrow(
       /Invalid selector syntax/
     );
   }, 10000);
 
   it('should exclude children of hidden parents even in includeAll mode', async () => {
     const fixturePath = `file://${fixturesPath}/visibility.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Take snapshot with includeAll mode
-    const snapshot = await firefox.takeSnapshot({ includeAll: true });
+    const snapshot = await zen.takeSnapshot({ includeAll: true });
 
     // Check that elements inside hidden parent are NOT in snapshot
     const hasHiddenButton = snapshot.json.uidMap.some(
@@ -201,10 +201,10 @@ describe('Snapshot Integration Tests', () => {
 
   it('should treat opacity 0.0 and variations as invisible', async () => {
     const fixturePath = `file://${fixturesPath}/visibility.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot = await firefox.takeSnapshot({ includeAll: true });
+    const snapshot = await zen.takeSnapshot({ includeAll: true });
 
     // Check that buttons with opacity 0, 0.0, 0.00 are NOT in snapshot
     const hasOpacity0 = snapshot.json.uidMap.some(
@@ -231,10 +231,10 @@ describe('Snapshot Integration Tests', () => {
 
   it('should exclude children of visibility hidden parents', async () => {
     const fixturePath = `file://${fixturesPath}/visibility.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    const snapshot = await firefox.takeSnapshot({ includeAll: true });
+    const snapshot = await zen.takeSnapshot({ includeAll: true });
 
     // Check that button inside visibility:hidden parent is NOT in snapshot
     const hasInvisibleButton = snapshot.json.uidMap.some(

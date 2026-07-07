@@ -4,16 +4,16 @@ description: Take a screenshot of a URL or the current page. Use when the user a
 argument-hint: [url or uid]
 ---
 
-# /firefox-devtools-mcp:screenshot
+# /zen-devtools-mcp:screenshot
 
 Captures a screenshot of a URL or the current page and shows it to the user.
 
 ## Usage
 
 ```
-/firefox-devtools-mcp:screenshot https://example.com   # Navigate then screenshot
-/firefox-devtools-mcp:screenshot                       # Screenshot current page
-/firefox-devtools-mcp:screenshot <uid>                 # Screenshot specific element
+/zen-devtools-mcp:screenshot https://example.com   # Navigate then screenshot
+/zen-devtools-mcp:screenshot                       # Screenshot current page
+/zen-devtools-mcp:screenshot <uid>                 # Screenshot specific element
 ```
 
 ## Steps

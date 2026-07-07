@@ -1,18 +1,16 @@
 /**
- * Integration test helpers for Firefox automation
- * Provides shared Firefox client instance and utilities for integration tests
+ * Integration test helpers for Zen automation
+ * Provides shared Zen client instance and utilities for integration tests
  */
 
-import { FirefoxClient } from '@/firefox/index.js';
-import type { FirefoxLaunchOptions } from '@/firefox/types.js';
+import { FirefoxClient as ZenClient } from '@/firefox/index.js';
+import type { FirefoxLaunchOptions as ZenLaunchOptions } from '@/firefox/types.js';
 
 /**
- * Creates a headless Firefox client for testing
+ * Creates a headless Zen client for testing
  */
-export async function createTestFirefox(
-  options?: Partial<FirefoxLaunchOptions>
-): Promise<FirefoxClient> {
-  const defaultOptions: FirefoxLaunchOptions = {
+export async function createTestZen(options?: Partial<ZenLaunchOptions>): Promise<ZenClient> {
+  const defaultOptions: ZenLaunchOptions = {
     headless: true,
     enableBidiLogging: false,
     width: 1280,
@@ -20,25 +18,25 @@ export async function createTestFirefox(
     ...options,
   };
 
-  const firefox = new FirefoxClient(defaultOptions);
-  await firefox.connect();
-  return firefox;
+  const zen = new ZenClient(defaultOptions);
+  await zen.connect();
+  return zen;
 }
 
 /**
- * Cleanup helper to close Firefox instance
- * Handles the case where firefox is undefined (e.g., when beforeAll times out)
+ * Cleanup helper to close Zen instance
+ * Handles the case where zen is undefined (e.g., when beforeAll times out)
  */
-export async function closeFirefox(firefox: FirefoxClient | undefined | null): Promise<void> {
-  if (!firefox) {
-    // Firefox was never initialized (e.g., beforeAll timed out)
+export async function closeZen(zen: ZenClient | undefined | null): Promise<void> {
+  if (!zen) {
+    // Zen was never initialized (e.g., beforeAll timed out)
     return;
   }
   try {
-    await firefox.close();
+    await zen.close();
   } catch (error) {
     // Ignore errors during cleanup
-    console.warn('Error closing Firefox:', error);
+    console.warn('Error closing Zen:', error);
   }
 }
 
@@ -92,7 +90,7 @@ export async function retry<T>(
  * Takes snapshots repeatedly until element matching the predicate is found
  */
 export async function waitForElementInSnapshot(
-  firefox: FirefoxClient,
+  zen: ZenClient,
   predicate: (entry: { uid: string; css: string; text?: string }) => boolean,
   timeout = 5000,
   interval = 200
@@ -100,7 +98,7 @@ export async function waitForElementInSnapshot(
   const startTime = Date.now();
 
   while (Date.now() - startTime < timeout) {
-    const snapshot = await firefox.takeSnapshot();
+    const snapshot = await zen.takeSnapshot();
     const element = snapshot.json.uidMap.find(predicate);
 
     if (element) {

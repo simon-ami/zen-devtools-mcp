@@ -3,11 +3,11 @@ name: browser-automation
 description: This skill should be used when the user asks about browser automation, testing web pages, extracting content, filling forms, taking screenshots, or monitoring console/network activity. Activates for E2E testing, form automation, browsing tasks, or debugging web applications.
 ---
 
-When the user asks about browser automation, use Firefox DevTools MCP to control a real Firefox browser.
+When the user asks about browser automation, use Zen DevTools MCP to control a real Zen browser.
 
 ## Before Starting
 
-Always call `list_pages` first. This checks whether Firefox is already running and which pages are open. Do not assume Firefox needs to be restarted or that you need to navigate from scratch — reuse the existing session whenever possible.
+Always call `list_pages` first. This checks whether Zen is already running and which pages are open. Do not assume Zen needs to be restarted or that you need to navigate from scratch — reuse the existing session whenever possible.
 
 ## When to Use This Skill
 
@@ -68,10 +68,10 @@ take_snapshot  # Get fresh UIDs
 
 ## Guidelines
 
-- **Check existing session first**: Call `list_pages` before navigating — reuse the running Firefox session rather than starting fresh
+- **Check existing session first**: Call `list_pages` before navigating — reuse the running Zen session rather than starting fresh
 - **Always snapshot first**: UIDs only exist after `take_snapshot`
 - **Re-snapshot after DOM changes**: UIDs become stale after interactions
 - **Screenshots**: in Cowork (system prompt has an outputs folder host path), call `screenshot_page saveTo="<host-outputs-path>/screenshot.png"` then call `present_files` with that path. Otherwise call `screenshot_page` without `saveTo` and include the returned image directly in your reply — the user cannot see tool call outputs.
 - **Check for errors**: Use `list_console_messages level="error"` to catch JS issues
-- **Firefox only**: This MCP controls Firefox, not Chrome or Safari
-- **Reconfiguring Firefox**: to use a specific binary, profile, or headless mode, call `restart_firefox` with the relevant options (`firefoxPath`, `profilePath`, `headless`)
+- **Zen only**: This MCP controls Zen, not Chrome or Safari
+- **Reconfiguring Zen**: to use a specific binary, profile, or headless mode, call `restart_zen` with the relevant options (`zenPath`, `profilePath`, `headless`)

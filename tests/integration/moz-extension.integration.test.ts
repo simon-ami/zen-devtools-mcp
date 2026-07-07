@@ -1,6 +1,6 @@
 /**
  * Integration tests for BiDi navigation
- * Tests with real Firefox browser in headless mode.
+ * Tests with real Zen browser in headless mode.
  *
  * Navigation uses BiDi browsingContext.navigate for all URLs.
  * Standard schemes (http/https/data/blob/file) use wait:"interactive".
@@ -10,8 +10,8 @@
  */
 
 import { describe, it, expect, beforeAll, afterAll, afterEach } from 'vitest';
-import { createTestFirefox, closeFirefox, waitFor } from '../helpers/firefox.js';
-import type { FirefoxClient } from '@/firefox/index.js';
+import { createTestZen, closeZen, waitFor } from '../helpers/zen.js';
+import type { FirefoxClient as ZenClient } from '@/firefox/index.js';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -39,8 +39,8 @@ function packExtension(): void {
  * to a chrome-privileged context and querying WebExtensionPolicy.
  * Requires MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1.
  */
-async function getExtensionHostname(firefox: FirefoxClient, extensionId: string): Promise<string> {
-  const treeResult = await firefox.sendBiDiCommand('browsingContext.getTree', {
+async function getExtensionHostname(zen: ZenClient, extensionId: string): Promise<string> {
+  const treeResult = await zen.sendBiDiCommand('browsingContext.getTree', {
     'moz:scope': 'chrome',
   });
   const contexts = treeResult.contexts || [];
@@ -48,8 +48,8 @@ async function getExtensionHostname(firefox: FirefoxClient, extensionId: string)
     throw new Error('No chrome contexts available');
   }
 
-  const driver = firefox.getDriver();
-  const originalContextId = firefox.getCurrentContextId();
+  const driver = zen.getDriver();
+  const originalContextId = zen.getCurrentContextId();
   const chromeContextId = contexts[0].context;
 
   try {
@@ -86,7 +86,7 @@ async function getExtensionHostname(firefox: FirefoxClient, extensionId: string)
 }
 
 describe('BiDi Navigation Integration Tests', () => {
-  let firefox: FirefoxClient;
+  let zen: ZenClient;
   let extensionUrl: string;
   let extensionId: string;
 
@@ -94,12 +94,12 @@ describe('BiDi Navigation Integration Tests', () => {
     packExtension();
 
     // MOZ_REMOTE_ALLOW_SYSTEM_ACCESS=1 is required to resolve the extension hostname
-    firefox = await createTestFirefox({
+    zen = await createTestZen({
       env: { MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1' },
     });
 
     // Install the test extension
-    const installResult = await firefox.sendBiDiCommand('webExtension.install', {
+    const installResult = await zen.sendBiDiCommand('webExtension.install', {
       extensionData: { type: 'archivePath', path: xpiPath },
     });
     extensionId = installResult?.extension;
@@ -108,7 +108,7 @@ describe('BiDi Navigation Integration Tests', () => {
     }
 
     // Resolve the moz-extension:// URL from the extension hostname
-    const hostname = await getExtensionHostname(firefox, extensionId);
+    const hostname = await getExtensionHostname(zen, extensionId);
     extensionUrl = `moz-extension://${hostname}/popup.html`;
   }, 60000);
 
@@ -116,10 +116,10 @@ describe('BiDi Navigation Integration Tests', () => {
     // Uninstall the test extension to avoid accumulation across test runs
     if (extensionId) {
       try {
-        await firefox.sendBiDiCommand('webExtension.uninstall', { extension: extensionId });
+        await zen.sendBiDiCommand('webExtension.uninstall', { extension: extensionId });
       } catch {}
     }
-    await closeFirefox(firefox);
+    await closeZen(zen);
     // Remove the packed .xpi so no build artifact remains on disk
     if (existsSync(xpiPath)) {
       unlinkSync(xpiPath);
@@ -129,7 +129,7 @@ describe('BiDi Navigation Integration Tests', () => {
   // Reset to a clean state between tests
   afterEach(async () => {
     try {
-      await firefox.navigate('about:blank');
+      await zen.navigate('about:blank');
     } catch {
       // Best-effort reset
     }
@@ -138,10 +138,10 @@ describe('BiDi Navigation Integration Tests', () => {
   it('should navigate to moz-extension:// URL without hanging', async () => {
     // Non-standard schemes use wait:"none" because the Remote Agent
     // doesn't emit navigation completion events for extension contexts.
-    await firefox.navigate(extensionUrl);
+    await zen.navigate(extensionUrl);
 
     // Poll for the page URL since wait:none returns before the page loads
-    const driver = firefox.getDriver();
+    const driver = zen.getDriver();
     await waitFor(async () => {
       const url = await driver.getCurrentUrl();
       return url.includes('moz-extension://');
@@ -152,10 +152,10 @@ describe('BiDi Navigation Integration Tests', () => {
   }, 15000);
 
   it('should create new page with moz-extension:// URL without hanging', async () => {
-    await firefox.createNewPage(extensionUrl);
+    await zen.createNewPage(extensionUrl);
 
     // Poll for the page URL since wait:none returns before the page loads
-    const driver = firefox.getDriver();
+    const driver = zen.getDriver();
     await waitFor(async () => {
       const url = await driver.getCurrentUrl();
       return url.includes('moz-extension://');

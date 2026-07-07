@@ -2,12 +2,12 @@
 /**
  * Test: zombie geckodriver cleanup
  *
- * Scenario B (SIGKILL): Firefox is completely dead (user clicked [X]).
- *   Recovery test: can close() clean up and reconnect after Firefox dies?
+ * Scenario B (SIGKILL): Zen is completely dead (user clicked [X]).
+ *   Recovery test: can close() clean up and reconnect after Zen dies?
  *
  * Scenario C (SIGKILL, non-headless): Same as B with a visible browser window.
  */
-import { FirefoxDevTools } from '../dist/index.js';
+import { ZenDevTools } from '../dist/index.js';
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
@@ -82,7 +82,7 @@ function killAll(pids) {
 }
 
 async function reconnect(geckosBefore, excludePids) {
-  const r = await launchFirefox(geckosBefore, excludePids);
+  const r = await launchZen(geckosBefore, excludePids);
   await r.devTools.navigate('about:blank');
   console.log('     Navigation works');
   await r.devTools.close();
@@ -98,8 +98,8 @@ process.on('unhandledRejection', (reason) => {
 // Launch helper
 // ---------------------------------------------------------------------------
 
-async function launchFirefox(geckosBefore, excludePids = [], headless = true) {
-  const devTools = new FirefoxDevTools({
+async function launchZen(geckosBefore, excludePids = [], headless = true) {
+  const devTools = new ZenDevTools({
     headless,
     viewport: { width: 1280, height: 720 },
   });
@@ -110,13 +110,13 @@ async function launchFirefox(geckosBefore, excludePids = [], headless = true) {
   );
   if (!geckoPid) throw new Error('No geckodriver PID found after connect');
 
-  const firefoxPids = getDescendants(geckoPid);
-  if (firefoxPids.length === 0) {
+  const zenPids = getDescendants(geckoPid);
+  if (zenPids.length === 0) {
     killHard(geckoPid);
-    throw new Error('No Firefox PIDs found under geckodriver');
+    throw new Error('No Zen PIDs found under geckodriver');
   }
 
-  return { devTools, geckoPid, firefoxPids };
+  return { devTools, geckoPid, zenPids };
 }
 
 // ---------------------------------------------------------------------------
@@ -128,25 +128,25 @@ async function main() {
   const geckosBefore = new Set(pgrep('geckodriver'));
   const usedPids = [];
 
-  console.log('Scenario B: Firefox killed (SIGKILL)');
+  console.log('Scenario B: Zen killed (SIGKILL)');
 
-  console.log('  1. Launching Firefox...');
-  const b = await launchFirefox(geckosBefore, usedPids);
-  console.log(`     Geckodriver PID: ${b.geckoPid}, Firefox PIDs: ${b.firefoxPids.join(', ')}`);
+  console.log('  1. Launching Zen...');
+  const b = await launchZen(geckosBefore, usedPids);
+  console.log(`     Geckodriver PID: ${b.geckoPid}, Zen PIDs: ${b.zenPids.join(', ')}`);
 
-  console.log('  2. Killing Firefox...');
-  killAll(b.firefoxPids);
-  for (const pid of b.firefoxPids) {
+  console.log('  2. Killing Zen...');
+  killAll(b.zenPids);
+  for (const pid of b.zenPids) {
     if (!(await waitForDeath(pid, 5000))) {
-      console.error(`  [FATAL] Firefox PID ${pid} survived SIGKILL`);
+      console.error(`  [FATAL] Zen PID ${pid} survived SIGKILL`);
       killHard(b.geckoPid);
       process.exit(1);
     }
   }
-  console.log('     Firefox is dead');
+  console.log('     Zen is dead');
 
   console.log(
-    `  3. ${isAlive(b.geckoPid) ? 'Zombie geckodriver detected' : 'Geckodriver died with Firefox (no zombie)'}`
+    `  3. ${isAlive(b.geckoPid) ? 'Zombie geckodriver detected' : 'Geckodriver died with Zen (no zombie)'}`
   );
 
   console.log('  4. Running cleanup (close() handles timeout + force-kill)...');
@@ -165,25 +165,25 @@ async function main() {
   usedPids.push(await reconnect(geckosBefore, usedPids));
   console.log('  Scenario B: PASS\n');
 
-  console.log('Scenario C: Firefox killed (SIGKILL) — non-headless');
+  console.log('Scenario C: Zen killed (SIGKILL) — non-headless');
 
-  console.log('  1. Launching Firefox (non-headless)...');
-  const c = await launchFirefox(geckosBefore, usedPids, false);
-  console.log(`     Geckodriver PID: ${c.geckoPid}, Firefox PIDs: ${c.firefoxPids.join(', ')}`);
+  console.log('  1. Launching Zen (non-headless)...');
+  const c = await launchZen(geckosBefore, usedPids, false);
+  console.log(`     Geckodriver PID: ${c.geckoPid}, Zen PIDs: ${c.zenPids.join(', ')}`);
 
-  console.log('  2. Killing Firefox...');
-  killAll(c.firefoxPids);
-  for (const pid of c.firefoxPids) {
+  console.log('  2. Killing Zen...');
+  killAll(c.zenPids);
+  for (const pid of c.zenPids) {
     if (!(await waitForDeath(pid, 5000))) {
-      console.error(`  [FATAL] Firefox PID ${pid} survived SIGKILL`);
+      console.error(`  [FATAL] Zen PID ${pid} survived SIGKILL`);
       killHard(c.geckoPid);
       process.exit(1);
     }
   }
-  console.log('     Firefox is dead');
+  console.log('     Zen is dead');
 
   console.log(
-    `  3. ${isAlive(c.geckoPid) ? 'Zombie geckodriver detected' : 'Geckodriver died with Firefox (no zombie)'}`
+    `  3. ${isAlive(c.geckoPid) ? 'Zombie geckodriver detected' : 'Geckodriver died with Zen (no zombie)'}`
   );
 
   console.log('  4. Running cleanup (close() handles timeout + force-kill)...');

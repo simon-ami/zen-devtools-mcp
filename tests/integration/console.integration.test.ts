@@ -1,17 +1,17 @@
 /**
  * Integration tests for console capture
- * Tests with real Firefox browser in headless mode
+ * Tests with real Zen browser in headless mode
  */
 
 import { describe, it, expect, beforeAll, afterAll } from 'vitest';
 import {
-  createTestFirefox,
-  closeFirefox,
+  createTestZen,
+  closeZen,
   waitFor,
   waitForElementInSnapshot,
   waitForPageLoad,
-} from '../helpers/firefox.js';
-import type { FirefoxClient } from '@/firefox/index.js';
+} from '../helpers/zen.js';
+import type { FirefoxClient as ZenClient } from '@/firefox/index.js';
 import { resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -19,30 +19,30 @@ const __dirname = fileURLToPath(new URL('.', import.meta.url));
 const fixturesPath = resolve(__dirname, '../fixtures');
 
 describe('Console Capture Integration Tests', () => {
-  let firefox: FirefoxClient;
+  let zen: ZenClient;
 
   beforeAll(async () => {
-    firefox = await createTestFirefox();
+    zen = await createTestZen();
   }, 30000);
 
   afterAll(async () => {
-    await closeFirefox(firefox);
+    await closeZen(zen);
   });
 
   it('should capture console messages on page load', async () => {
-    firefox.clearConsoleMessages();
+    zen.clearConsoleMessages();
 
     const fixturePath = `file://${fixturesPath}/console.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Wait for console messages to be captured
     await waitFor(async () => {
-      const messages = await firefox.getConsoleMessages();
+      const messages = await zen.getConsoleMessages();
       return messages.length > 0;
     }, 5000);
 
-    const messages = await firefox.getConsoleMessages();
+    const messages = await zen.getConsoleMessages();
 
     // Should have messages from page load
     expect(messages.length).toBeGreaterThan(0);
@@ -59,29 +59,29 @@ describe('Console Capture Integration Tests', () => {
 
   it('should capture console.log from button click', async () => {
     const fixturePath = `file://${fixturesPath}/console.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    firefox.clearConsoleMessages();
+    zen.clearConsoleMessages();
 
     // Wait for log info button to appear in snapshot
     const logInfoBtn = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#logInfo') || entry.css.includes('logInfo'),
       10000
     );
 
     expect(logInfoBtn).toBeDefined();
 
-    await firefox.clickByUid(logInfoBtn.uid);
+    await zen.clickByUid(logInfoBtn.uid);
 
     // Wait for console message
     await waitFor(async () => {
-      const messages = await firefox.getConsoleMessages();
+      const messages = await zen.getConsoleMessages();
       return messages.some((msg) => msg.text.includes('Info message from button'));
     }, 5000);
 
-    const messages = await firefox.getConsoleMessages();
+    const messages = await zen.getConsoleMessages();
     const buttonMessage = messages.find((msg) => msg.text.includes('Info message from button'));
 
     expect(buttonMessage).toBeDefined();
@@ -90,29 +90,29 @@ describe('Console Capture Integration Tests', () => {
 
   it('should capture console.warn from button click', async () => {
     const fixturePath = `file://${fixturesPath}/console.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    firefox.clearConsoleMessages();
+    zen.clearConsoleMessages();
 
     // Wait for log warn button to appear in snapshot
     const logWarnBtn = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#logWarn') || entry.css.includes('logWarn'),
       10000
     );
 
     expect(logWarnBtn).toBeDefined();
 
-    await firefox.clickByUid(logWarnBtn.uid);
+    await zen.clickByUid(logWarnBtn.uid);
 
     // Wait for console message
     await waitFor(async () => {
-      const messages = await firefox.getConsoleMessages();
+      const messages = await zen.getConsoleMessages();
       return messages.some((msg) => msg.text.includes('Warning message from button'));
     }, 5000);
 
-    const messages = await firefox.getConsoleMessages();
+    const messages = await zen.getConsoleMessages();
     const warnMessage = messages.find((msg) => msg.text.includes('Warning message from button'));
 
     expect(warnMessage).toBeDefined();
@@ -121,29 +121,29 @@ describe('Console Capture Integration Tests', () => {
 
   it('should capture console.error from button click', async () => {
     const fixturePath = `file://${fixturesPath}/console.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
-    firefox.clearConsoleMessages();
+    zen.clearConsoleMessages();
 
     // Wait for log error button to appear in snapshot
     const logErrorBtn = await waitForElementInSnapshot(
-      firefox,
+      zen,
       (entry) => entry.css.includes('#logError') || entry.css.includes('logError'),
       10000
     );
 
     expect(logErrorBtn).toBeDefined();
 
-    await firefox.clickByUid(logErrorBtn.uid);
+    await zen.clickByUid(logErrorBtn.uid);
 
     // Wait for console message
     await waitFor(async () => {
-      const messages = await firefox.getConsoleMessages();
+      const messages = await zen.getConsoleMessages();
       return messages.some((msg) => msg.text.includes('Error message from button'));
     }, 5000);
 
-    const messages = await firefox.getConsoleMessages();
+    const messages = await zen.getConsoleMessages();
     const errorMessage = messages.find((msg) => msg.text.includes('Error message from button'));
 
     expect(errorMessage).toBeDefined();
@@ -152,39 +152,39 @@ describe('Console Capture Integration Tests', () => {
 
   it('should clear console messages', async () => {
     const fixturePath = `file://${fixturesPath}/console.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Wait for messages from page load
     await waitFor(async () => {
-      const messages = await firefox.getConsoleMessages();
+      const messages = await zen.getConsoleMessages();
       return messages.length > 0;
     }, 5000);
 
-    let messages = await firefox.getConsoleMessages();
+    let messages = await zen.getConsoleMessages();
     expect(messages.length).toBeGreaterThan(0);
 
     // Clear messages
-    firefox.clearConsoleMessages();
+    zen.clearConsoleMessages();
 
-    messages = await firefox.getConsoleMessages();
+    messages = await zen.getConsoleMessages();
     expect(messages.length).toBe(0);
   }, 15000);
 
   it('should have timestamp in console messages', async () => {
-    firefox.clearConsoleMessages();
+    zen.clearConsoleMessages();
 
     const fixturePath = `file://${fixturesPath}/console.html`;
-    await firefox.navigate(fixturePath);
+    await zen.navigate(fixturePath);
     await waitForPageLoad();
 
     // Wait for messages
     await waitFor(async () => {
-      const messages = await firefox.getConsoleMessages();
+      const messages = await zen.getConsoleMessages();
       return messages.length > 0;
     }, 5000);
 
-    const messages = await firefox.getConsoleMessages();
+    const messages = await zen.getConsoleMessages();
     const messageWithTimestamp = messages.find((msg) => msg.timestamp);
 
     expect(messageWithTimestamp).toBeDefined();
