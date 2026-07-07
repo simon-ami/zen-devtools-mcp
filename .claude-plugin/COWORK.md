@@ -13,6 +13,8 @@ At any point, make sure the **Cowork** tab is selected and not the **Chat** tab.
 
 1. Make sure Node.js is installed by running `node --version` in a terminal. The output should show version 20.19.0 or higher. If not, download it from [nodejs.org](https://nodejs.org).
 
+![screenshot of command line used to check node and npm versions](cowork-npm-version.png)
+
 2. Open the **Claude Desktop** application, and select the **Cowork** tab.
 
 ![screenshot of Claude Desktop with the cowork tab selected](cowork-cowork-tab.png)
