@@ -12,12 +12,12 @@ beforeAll(() => {
 });
 
 afterAll(() => {
-  // Global cleanup: kill any remaining Firefox/geckodriver processes
+  // Global cleanup: kill any remaining Zen/geckodriver processes
   cleanup();
 });
 
 /**
- * Cleanup function to kill all Firefox and geckodriver processes
+ * Cleanup function to kill all Zen and geckodriver processes
  * This ensures no zombie processes are left after test runs
  */
 function cleanup() {
@@ -27,16 +27,16 @@ function cleanup() {
   isCleaningUp = true;
 
   try {
-    // Find Firefox processes started with --marionette (test instances)
-    const firefoxPids = execSync('pgrep -f "firefox.*marionette" || true', {
+    // Find Zen processes started with --marionette (test instances)
+    const zenPids = execSync('pgrep -f "zen.*marionette" || true', {
       encoding: 'utf-8',
     })
       .trim()
       .split('\n')
       .filter(Boolean);
 
-    // Kill children of each Firefox test process, then kill the parent
-    for (const pid of firefoxPids) {
+    // Kill children of each Zen test process, then kill the parent
+    for (const pid of zenPids) {
       try {
         execSync(`pkill -9 -P ${pid} 2>/dev/null || true`, { stdio: 'ignore' });
       } catch {
@@ -54,7 +54,7 @@ function cleanup() {
       stdio: 'ignore',
     });
 
-    console.log(' Global cleanup: All test Firefox processes terminated');
+    console.log(' Global cleanup: All test Zen processes terminated');
   } catch (error) {
     // Ignore errors - processes might already be dead
   } finally {
@@ -64,13 +64,13 @@ function cleanup() {
 
 // Handle process termination signals
 process.on('SIGINT', () => {
-  console.log('\n SIGINT received, cleaning up Firefox processes...');
+  console.log('\n SIGINT received, cleaning up Zen processes...');
   cleanup();
   process.exit(0);
 });
 
 process.on('SIGTERM', () => {
-  console.log('\n SIGTERM received, cleaning up Firefox processes...');
+  console.log('\n SIGTERM received, cleaning up Zen processes...');
   cleanup();
   process.exit(0);
 });
