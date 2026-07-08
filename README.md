@@ -222,7 +222,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for how to file issues, run tests, and wo
 
 ## Author
 
-Maintained independently by [Simon Ami](https://github.com/simon-ami). Based on Mozilla's Firefox DevTools MCP server.
+Maintained independently by [Simon Benedict](https://github.com/simon-ami). Based on Mozilla's Firefox DevTools MCP server.
 
 ## License
 
