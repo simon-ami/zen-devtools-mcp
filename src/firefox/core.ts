@@ -5,6 +5,7 @@
 import { Builder, Browser, Capabilities, WebDriver } from 'selenium-webdriver';
 import firefox from 'selenium-webdriver/firefox.js';
 import { mkdirSync, openSync, closeSync, existsSync, readdirSync, statSync } from 'node:fs';
+import { createConnection } from 'node:net';
 import { homedir } from 'node:os';
 import { join, delimiter } from 'node:path';
 import type { FirefoxLaunchOptions } from './types.js';
@@ -85,6 +86,45 @@ async function findGeckodriver(): Promise<string> {
   return found;
 }
 
+async function assertMarionettePortOpen(port: number, timeoutMs = 1000): Promise<void> {
+  await new Promise<void>((resolve, reject) => {
+    const socket = createConnection({ host: '127.0.0.1', port });
+    let settled = false;
+
+    const finish = (error?: Error) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+      socket.destroy();
+      if (error) {
+        reject(error);
+      } else {
+        resolve();
+      }
+    };
+
+    socket.setTimeout(timeoutMs, () => {
+      finish(
+        new Error(
+          `Cannot connect to Zen Marionette on 127.0.0.1:${port} after ${timeoutMs}ms. ` +
+            `Start Zen with "--marionette" before using --connect-existing.`
+        )
+      );
+    });
+
+    socket.once('connect', () => finish());
+    socket.once('error', (error) => {
+      finish(
+        new Error(
+          `Cannot connect to Zen Marionette on 127.0.0.1:${port}: ${error.message}. ` +
+            `Start Zen with "--marionette" before using --connect-existing.`
+        )
+      );
+    });
+  });
+}
+
 export class FirefoxCore {
   private currentContextId: string | null = null;
   private driver: WebDriver | null = null;
@@ -109,6 +149,8 @@ export class FirefoxCore {
 
     if (this.options.connectExisting) {
       const port = this.options.marionettePort ?? 2828;
+
+      await assertMarionettePortOpen(port);
 
       const geckodriverPath = await findGeckodriver();
       logDebug(`Using geckodriver: ${geckodriverPath}`);

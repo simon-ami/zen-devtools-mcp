@@ -56,7 +56,7 @@ export function resolveProfilePath(parentPath: string): ResolvedProfile {
       `   created at: ${mcpProfilePath}\n` +
       `   This keeps your real profile safe from automated browser access.\n` +
       `   If you want to connect to your real profile, start Zen yourself with\n` +
-      `   --remote-debugging-port and use --connect-existing instead.`;
+      `   --marionette and use --connect-existing instead.`;
     log(warning);
   }
 
