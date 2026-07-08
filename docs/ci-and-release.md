@@ -1,6 +1,8 @@
 # CI And Release
 
-CI runs linting, formatting checks, typechecking, build, and unit tests. It intentionally does not run browser integration tests because hosted runners do not provide Zen Browser.
+CI runs linting, formatting checks, typechecking, build, unit tests, and unit coverage. It intentionally does not run browser integration tests because hosted runners do not provide Zen Browser.
+
+Coverage uploads use Codecov from the Node 20 CI job. If Codecov requires authentication for the repository or protected branch, add a repository secret named `CODECOV_TOKEN`.
 
 Releases follow the upstream two-step shape, adapted for this fork:
 

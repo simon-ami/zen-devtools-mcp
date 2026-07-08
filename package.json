@@ -31,6 +31,7 @@
     "test": "vitest",
     "test:run": "vitest run",
     "test:unit": "vitest run --exclude 'tests/integration/**'",
+    "test:coverage:unit": "vitest run --coverage --exclude 'tests/integration/**'",
     "test:coverage": "vitest run --coverage",
     "test:watch": "vitest watch",
     "test:ui": "vitest --ui",
