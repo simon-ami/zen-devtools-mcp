@@ -8,7 +8,7 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     setupFiles: ['./tests/setup.ts'],
-    // Run tests sequentially to avoid Firefox port conflicts
+    // Run tests sequentially to avoid browser port conflicts
     fileParallelism: false,
     pool: 'forks',
     poolOptions: {

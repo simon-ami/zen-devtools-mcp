@@ -1,5 +1,5 @@
 /**
- * Tests for Firefox preference utilities
+ * Tests for Gecko preference utilities
  */
 
 import { describe, it, expect } from 'vitest';

@@ -1,5 +1,5 @@
 /**
- * Firefox preference utilities
+ * Gecko preference utilities
  * Helper functions for working with Services.prefs API
  */
 
