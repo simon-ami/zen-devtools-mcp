@@ -1,6 +1,6 @@
 {
   "name": "zen-devtools-mcp",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Unofficial Model Context Protocol (MCP) server for Zen Browser DevTools automation",
   "author": "Simon Ami",
   "license": "MIT OR Apache-2.0",

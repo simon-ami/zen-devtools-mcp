@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.1.1
+
+- Added a clear `--connect-existing` error when Zen is not reachable on the Marionette port.
+- Fixed profile guidance to point users at `--marionette` for existing Zen sessions.
+- Updated test cleanup to target Zen browser processes.
+- Cleaned up stale Firefox-facing labels in agent docs, fixtures, and inherited comments.
+- Aligned project governance, security, testing, release, and Codecov documentation with this fork.
+
 ## 0.1.0
 
 - Forked the MCP server into a Zen-first package named `zen-devtools-mcp`.
