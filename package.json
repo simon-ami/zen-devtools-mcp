@@ -15,6 +15,7 @@
     "build": "tsup",
     "build:moz": "node scripts/generate-moz-package.mjs && tsup --config tsup.config.moz.ts",
     "build:all": "npm run build && npm run build:moz",
+    "build:mcpb": "node scripts/build-mcpb.mjs",
     "publish:moz": "node scripts/publish-moz-package.mjs",
     "start": "node dist/index.js",
     "setup": "node scripts/setup-mcp-config.js",
@@ -75,6 +76,7 @@
     "yargs": "17.7.2"
   },
   "devDependencies": {
+    "@anthropic-ai/mcpb": "2.1.2",
     "@types/jsdom": "28.0.0",
     "@types/node": "24.1.0",
     "@types/selenium-webdriver": "4.35.1",

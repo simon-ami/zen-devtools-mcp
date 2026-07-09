@@ -33,10 +33,15 @@ jobs:
       - name: Create archive
         run: tar -czf firefox-devtools-mcp-${{ github.ref_name }}.tar.gz dist package.json README.md LICENSE
 
+      - name: Build MCPB bundle
+        run: npm run build:mcpb
+
       - name: Create release
         uses: softprops/action-gh-release@v2
         with:
-          files: firefox-devtools-mcp-${{ github.ref_name }}.tar.gz
+          files: |
+            firefox-devtools-mcp-${{ github.ref_name }}.tar.gz
+            dist-mcpb/*.mcpb
           generate_release_notes: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
