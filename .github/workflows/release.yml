@@ -31,7 +31,7 @@ jobs:
         run: npm run test:run
 
       - name: Create archive
-        run: tar -czf firefox-devtools-mcp-${{ github.ref_name }}.tar.gz dist package.json README.md LICENSE
+        run: tar -czf firefox-devtools-mcp-${{ github.ref_name }}.tar.gz dist package.json README.md LICENSE-APACHE LICENSE-MIT
 
       - name: Build MCPB bundle
         run: npm run build:mcpb
