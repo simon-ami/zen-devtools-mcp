@@ -141,6 +141,12 @@ BiDi-dependent features (console events, network events) are not available in co
 > Only enable Marionette when you need MCP automation, then restart Zen normally
 > afterward.
 
+For personal profiles, you may set `remote.prefs.recommended=false` in
+`about:config` before starting Zen with Marionette. This prevents Gecko's
+testing preferences from disabling features such as password autofill, but it
+also leaves saved credentials available to the automated session. A dedicated
+profile remains the recommended option.
+
 ## Tool overview
 
 - Pages: list/new/navigate/select/close
@@ -188,6 +194,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more details on local development, te
 - Zen not found: pass `--zen-path "/Applications/Zen.app/Contents/MacOS/zen"` (macOS) or the correct path on your OS.
 - First run is slow: Selenium sets up the BiDi session; subsequent runs are faster.
 - Stale UIDs after navigation: take a fresh snapshot (`take_snapshot`) before using UID tools.
+- Saved-password suggestions stopped after using `--connect-existing`: Marionette's recommended automation preferences may leave `signon.autofillForms` and `signon.rememberSignons` set to `false` after the session ends. Stop the MCP server, restart Zen without Marionette, and reset both preferences in `about:config`.
 - Windows 10: Error during discovery for MCP server 'zen-devtools': MCP error -32000: Connection closed
   - **Solution 1** Wrap with `cmd /c` ([details](https://github.com/modelcontextprotocol/servers/issues/1082#issuecomment-2791786310)):
 
