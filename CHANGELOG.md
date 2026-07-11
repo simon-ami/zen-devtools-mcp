@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-07-11
+
+### Added
+
+- Added an MCPB build target and Zen-specific Claude plugin marketplace packaging.
+- Added a companion plugin for diagnosing Claude plugin setup problems.
+
+### Fixed
+
+- Server name and package version are now injected correctly at build time.
+- Release archives now include the actual MIT and Apache license files.
+- Releases now trigger npm publishing without relying on an unauthorized action.
+
+### Changed
+
+- Restructured Claude plugin files to support a multi-plugin marketplace.
+- Added Claude Cowork installation documentation.
+
 ## [0.1.1] - 2026-07-08
 
 ### Fixed

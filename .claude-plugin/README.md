@@ -1,49 +1,49 @@
-# Firefox DevTools Plugin for Claude Code
+# Zen DevTools Plugin for Claude Code
 
-Control Firefox for automated browsing, web testing, and debugging. Navigate pages, fill forms, click elements, take screenshots, and monitor console/network activity.
+Control Zen for automated browsing, web testing, and debugging. Navigate pages, fill forms, click elements, take screenshots, and monitor console/network activity.
 
 ## What's Included
 
-- **MCP Server** - Connects Claude Code to Firefox via WebDriver BiDi
+- **MCP Server** - Connects Claude Code to Zen via WebDriver BiDi
 - **Skill** - Auto-triggers for browser automation, testing, and debugging tasks
 - **Agents** - Dedicated `e2e-tester` and `web-extractor` agents for focused tasks
-- **Commands** - `/firefox-devtools-mcp:navigate`, `/firefox-devtools-mcp:screenshot`, `/firefox-devtools-mcp:debug`
+- **Commands** - `/zen-devtools-mcp:navigate`, `/zen-devtools-mcp:screenshot`, `/zen-devtools-mcp:debug`
 
 ## Installation
 
 ```bash
-/plugin marketplace add mozilla/firefox-devtools-mcp
-/plugin install firefox-devtools-mcp@firefox-devtools-plugins
+/plugin marketplace add simon-ami/zen-devtools-mcp
+/plugin install zen-devtools-mcp@zen-devtools-plugins
 ```
 
 ## Commands
 
-### /firefox-devtools-mcp:navigate
+### /zen-devtools-mcp:navigate
 
 Navigate to a URL and take a DOM snapshot:
 
 ```
-/firefox-devtools-mcp:navigate https://example.com
-/firefox-devtools-mcp:navigate https://github.com/login
+/zen-devtools-mcp:navigate https://example.com
+/zen-devtools-mcp:navigate https://github.com/login
 ```
 
-### /firefox-devtools-mcp:screenshot
+### /zen-devtools-mcp:screenshot
 
 Capture the current page or a specific element:
 
 ```
-/firefox-devtools-mcp:screenshot
-/firefox-devtools-mcp:screenshot e15
+/zen-devtools-mcp:screenshot
+/zen-devtools-mcp:screenshot e15
 ```
 
-### /firefox-devtools-mcp:debug
+### /zen-devtools-mcp:debug
 
 Show console errors and failed network requests:
 
 ```
-/firefox-devtools-mcp:debug
-/firefox-devtools-mcp:debug console
-/firefox-devtools-mcp:debug network
+/zen-devtools-mcp:debug
+/zen-devtools-mcp:debug console
+/zen-devtools-mcp:debug network
 ```
 
 ## Agents
@@ -74,15 +74,15 @@ The plugin works automatically when you ask about browser tasks:
 
 The plugin enables the following by default:
 
-- **`--enable-script`** — enables JavaScript evaluation and debugging tools (`evaluate_script`, logpoints, script inspection). Requires Firefox 153+.
-- **`remote.prefs.recommended=false`** — skips WebDriver's automation preferences so Firefox behaves closer to a regular browser session. See [RecommendedPreferences](https://searchfox.org/firefox-main/source/remote/shared/RecommendedPreferences.sys.mjs) for what those preferences do.
+- **`--enable-script`** — enables JavaScript evaluation and debugging tools (`evaluate_script`, logpoints, script inspection). Requires Gecko 153+.
+- **`remote.prefs.recommended=false`** — skips WebDriver's automation preferences so Zen behaves closer to a regular browser session. See [RecommendedPreferences](https://searchfox.org/firefox-main/source/remote/shared/RecommendedPreferences.sys.mjs) for what those preferences do.
 
 ## Requirements
 
-- Firefox 153+ (for script tools) or Firefox 120+ (without script tools)
+- Gecko 153+ (for script tools) or Zen Browser (without script tools)
 - Node.js 20.19.0+
 
 ## Links
 
-- [Repository](https://github.com/mozilla/firefox-devtools-mcp)
-- [npm](https://www.npmjs.com/package/@mozilla/firefox-devtools-mcp)
+- [Repository](https://github.com/simon-ami/zen-devtools-mcp)
+- [npm](https://www.npmjs.com/package/@simon-ami/zen-devtools-mcp)
