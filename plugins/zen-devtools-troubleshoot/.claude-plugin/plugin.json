@@ -1,0 +1,11 @@
+{
+  "name": "zen-devtools-troubleshoot",
+  "description": "Diagnose and fix Zen DevTools MCP setup issues. Use this if the zen-devtools-mcp plugin is not working.",
+  "author": {
+    "name": "Simon Ami",
+    "url": "https://github.com/simon-ami/zen-devtools-mcp"
+  },
+  "repository": "https://github.com/simon-ami/zen-devtools-mcp",
+  "homepage": "https://github.com/simon-ami/zen-devtools-mcp",
+  "license": "MIT OR Apache-2.0"
+}

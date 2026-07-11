@@ -1,0 +1,24 @@
+{
+  "name": "zen-devtools-mcp",
+  "description": "Control Zen for browsing, web testing, and debugging. Fill forms, capture network and console activity, take screenshots, and inspect console and network activity.",
+  "author": {
+    "name": "Simon Ami",
+    "url": "https://github.com/simon-ami/zen-devtools-mcp"
+  },
+  "repository": "https://github.com/simon-ami/zen-devtools-mcp",
+  "homepage": "https://github.com/simon-ami/zen-devtools-mcp",
+  "license": "MIT OR Apache-2.0",
+  "mcpServers": {
+    "zen-devtools": {
+      "command": "npx",
+      "args": [
+        "-y",
+        "zen-devtools-mcp@latest",
+        "--auto-profile",
+        "--enable-script",
+        "--pref",
+        "remote.prefs.recommended=false"
+      ]
+    }
+  }
+}

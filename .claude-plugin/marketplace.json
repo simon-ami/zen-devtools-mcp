@@ -1,18 +1,29 @@
 {
-  "name": "firefox-devtools-plugins",
+  "name": "zen-devtools-plugins",
   "owner": {
-    "name": "Mozilla"
+    "name": "Simon Ami"
   },
   "plugins": [
     {
-      "name": "firefox-devtools-mcp",
-      "source": "./",
-      "description": "Control Firefox for browsing, web testing, and debugging. Fill forms, capture network and console activity, take screenshots, run scripts, and profile performance. Supports Android devices.",
-      "homepage": "https://github.com/mozilla/firefox-devtools-mcp",
-      "repository": "https://github.com/mozilla/firefox-devtools-mcp",
+      "name": "zen-devtools-mcp",
+      "source": "./plugins/zen-devtools-mcp/",
+      "description": "Control Zen for browsing, web testing, and debugging. Fill forms, capture network and console activity, take screenshots, and inspect console and network activity.",
+      "homepage": "https://github.com/simon-ami/zen-devtools-mcp",
+      "repository": "https://github.com/simon-ami/zen-devtools-mcp",
       "license": "MIT OR Apache-2.0",
       "author": {
-        "name": "Mozilla"
+        "name": "Simon Ami"
+      }
+    },
+    {
+      "name": "zen-devtools-troubleshoot",
+      "source": "./plugins/zen-devtools-troubleshoot/",
+      "description": "Diagnose and fix Zen DevTools MCP setup issues. Use this if the zen-devtools-mcp plugin is not working.",
+      "homepage": "https://github.com/simon-ami/zen-devtools-mcp",
+      "repository": "https://github.com/simon-ami/zen-devtools-mcp",
+      "license": "MIT OR Apache-2.0",
+      "author": {
+        "name": "Simon Ami"
       }
     }
   ]
