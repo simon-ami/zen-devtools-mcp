@@ -4,6 +4,7 @@
 [![CI](https://github.com/simon-ami/zen-devtools-mcp/workflows/CI/badge.svg)](https://github.com/simon-ami/zen-devtools-mcp/actions/workflows/ci.yml)
 [![codecov](https://codecov.io/gh/simon-ami/zen-devtools-mcp/branch/main/graph/badge.svg)](https://codecov.io/gh/simon-ami/zen-devtools-mcp)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE-MIT) [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](LICENSE-APACHE)
+[![Zen DevTools MCP server](https://glama.ai/mcp/servers/simon-ami/zen-devtools-mcp/badges/card.svg)](https://glama.ai/mcp/servers/simon-ami/zen-devtools-mcp)
 
 Unofficial Model Context Protocol server for automating Zen Browser via WebDriver BiDi (through Selenium WebDriver). Works with Claude Code, Claude Desktop, Cursor, Cline and other MCP clients.
 
