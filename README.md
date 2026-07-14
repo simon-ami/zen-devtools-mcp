@@ -7,7 +7,7 @@
 
 [![Zen DevTools MCP server](https://glama.ai/mcp/servers/simon-ami/zen-devtools-mcp/badges/card.svg)](https://glama.ai/mcp/servers/simon-ami/zen-devtools-mcp)
 
-Unofficial Model Context Protocol server for automating Zen Browser via WebDriver BiDi (through Selenium WebDriver). Works with Claude Code, Claude Desktop, Cursor, Cline and other MCP clients.
+Unofficial Model Context Protocol server for automating Zen Browser via WebDriver BiDi (through Selenium WebDriver). Works with Claude Code, Claude Desktop, Codex App/CLI, Cursor, Cline and other MCP clients.
 
 Repository: https://github.com/simon-ami/zen-devtools-mcp
 
